@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Travel App</title>
   <link rel="icon" type="image/png" href="./favicon.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Zen+Old+Mincho:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -169,7 +170,12 @@
                     <span class="w-1 h-1 rounded-full bg-gray-300"></span>
                     <span id="current-location-text" class="text-xs text-[var(--theme-color)] font-bold uppercase tracking-widest font-sans">LOCATION</span>
                 </div>
-            </div>
+                <div id="quick-add-act-btn" class="mt-4"> 
+                    <button onclick="addActivity()" class="capsule-btn bg-white border-[var(--theme-color)] text-[var(--theme-color)] hover:bg-gray-50 shadow-md">
+                        <span>＋</span> 新增活動節點
+                    </button>
+                </div>
+                </div>
             <div id="template-actions" class="hidden flex gap-2">
                 <button onclick="applyDayTemplate('departure')" class="capsule-btn"><span>🏠</span> 出發</button>
                 <button onclick="applyDayTemplate('general')" class="capsule-btn"><span>📍</span> 觀光</button>
@@ -299,6 +305,7 @@
     let myChart = null;
     let categoryChart = null;
     let draggedExpenseIdx = null;
+    let draggedActivityIdx = null; // ★★★ 修改處 1: 新增活動卡片拖曳索引 ★★★
     let currentListTab = 'checklist';
     let activeCategoryFilter = null;
     let currentDisplayCurrency = 'JPY'; 
@@ -307,7 +314,7 @@
     const CAT_COLORS = { '食': '#fca5a5', '衣': '#fdba74', '住': '#fcd34d', '行': '#86efac', '育': '#93c5fd', '樂': '#c4b5fd', '購': '#f472b6', '雜': '#94a3b8' };
 
     const TEMPLATES = {
-        departure: [ { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: {} }, { time: "10:30", icon: "✈️", label: "FLIGHT", location: "機場 T1", address:"", desc: "辦理登機", costType: "行", expenseDetail: "", currency: "TWD", splits: {} } ],
+        departure: [ { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: {} }, { time: "10:30", icon: "✈️", label: "FLIGHT", location: "機場 T1", address:"", desc: "辦理登機", costType: "行", currency: "TWD", splits: {} } ],
         general: [ { time: "09:00", icon: "☕", label: "MORNING", location: "Blue Bottle", address:"京都市左京區南禪寺草川町64", desc: "晨間咖啡", costType: "食", expenseDetail: "拿鐵", currency: "JPY", splits: {} }, { time: "11:30", icon: "🍜", label: "LUNCH", location: "麵屋豬一", address:"京都市下京區恵美須之町542", desc: "必比登推薦", costType: "食", expenseDetail: "拉麵", currency: "JPY", splits: {} }, { time: "15:00", icon: "⛩️", label: "VISIT", location: "清水寺", address:"京都市東山區清水1丁目294", desc: "世界遺產", costType: "育", expenseDetail: "門票", currency: "JPY", splits: {} } ],
         return: [ { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: {} }, { time: "16:00", icon: "🏠", label: "HOME", location: "返抵國門", address:"", desc: "平安回家", costType: "行", expenseDetail: "機捷", currency: "TWD", splits: {} } ]
     };
@@ -448,11 +455,11 @@
         const btn = document.getElementById('edit-content-btn');
         const tpl = document.getElementById('template-actions');
         const addBtn = document.getElementById('add-act-btn');
-        
+
         if(isEditMode) { 
             btn.classList.add('active'); 
             addBtn.classList.remove('hidden');
-            tpl.classList.remove('hidden'); 
+            tpl.classList.remove('hidden');
         } else { 
             btn.classList.remove('active'); 
             addBtn.classList.add('hidden');
@@ -523,9 +530,19 @@
             else isExpanded = (totalCost > 0);
 
             const el=document.createElement('div'); 
-            el.className='relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group animate-slide-up bg-white hover:shadow-md transition-all duration-300 ml-6'; 
+            el.className='relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group animate-slide-up bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item'; // ★★★ 修改處 2: 新增 drag-item class ★★★
             el.style.animationDelay=`${idx*0.05}s`;
             el.dataset.index = idx;
+            el.draggable = true; // ★★★ 修改處 3: 允許拖曳 ★★★
+
+            // ★★★ 修改處 4: 新增拖曳監聽器 ★★★
+            el.addEventListener('dragstart', handleActivityDragStart); 
+            el.addEventListener('dragover', handleActivityDragOver); 
+            el.addEventListener('drop', handleActivityDrop); 
+            el.addEventListener('touchstart', handleActivityTouchStart, {passive: false});
+            el.addEventListener('touchmove', handleActivityTouchMove, {passive: false});
+            el.addEventListener('touchend', handleActivityTouchEnd);
+
             const dot = document.createElement('div'); dot.className = 'timeline-dot'; c.appendChild(dot);
 
             let splitsHtml = '';
@@ -791,6 +808,101 @@
     function handleTouchStart(e) { if(e.target.classList.contains('drag-handle')) { touchTargetItem = e.target.closest('.drag-item'); touchStartY = e.touches[0].clientY; touchTargetItem.classList.add('dragging'); } }
     function handleTouchMove(e) { if(!touchTargetItem) return; e.preventDefault(); }
     function handleTouchEnd(e) { if(!touchTargetItem) return; touchTargetItem.classList.remove('dragging'); const endY = e.changedTouches[0].clientY; const diff = endY - touchStartY; const idx = +touchTargetItem.dataset.index; if (Math.abs(diff) > 40) { const targetIdx = diff > 0 ? idx + 1 : idx - 1; if (targetIdx >= 0 && targetIdx < tripData.expenses.length) { const item = tripData.expenses.splice(idx, 1)[0]; tripData.expenses.splice(targetIdx, 0, item); saveCurrentTrip(); renderExpensesList(); } } touchTargetItem = null; }
+
+    // ★★★ 修改處 5: 行程活動卡片拖曳邏輯 (新增) ★★★
+    function handleActivityDragStart(e) { 
+        draggedActivityIdx = +this.dataset.index; 
+        this.classList.add('dragging'); 
+        e.dataTransfer.effectAllowed = 'move'; 
+    }
+
+    function handleActivityDragOver(e) { 
+        e.preventDefault(); 
+        e.dataTransfer.dropEffect = 'move'; 
+    }
+
+    function handleActivityDrop(e) { 
+        e.preventDefault(); 
+        const target = e.target.closest('.drag-item'); 
+        if (target && draggedActivityIdx !== null) { 
+            const droppedIdx = +target.dataset.index; 
+            if(draggedActivityIdx !== droppedIdx) { 
+                const activities = tripData.days[`Day ${currentDay}`].activities;
+                const item = activities.splice(draggedActivityIdx, 1)[0]; 
+                activities.splice(droppedIdx, 0, item); 
+                saveCurrentTrip(); 
+                renderTimeline(); 
+            } 
+        } 
+        this.classList.remove('dragging'); 
+        draggedActivityIdx = null; 
+    }
+
+    let touchStartActivityY = 0; 
+    let touchTargetActivityItem = null;
+
+    function handleActivityTouchStart(e) { 
+        if (e.target.closest('input, textarea, select, button, a')) return;
+        
+        touchTargetActivityItem = e.target.closest('.drag-item'); 
+        if (!touchTargetActivityItem) return;
+
+        e.preventDefault(); 
+        
+        draggedActivityIdx = +touchTargetActivityItem.dataset.index;
+        touchStartActivityY = e.touches[0].clientY;
+        touchTargetActivityItem.classList.add('dragging');
+    }
+
+    function handleActivityTouchMove(e) { 
+        if(!touchTargetActivityItem) return; 
+        e.preventDefault();
+        
+        const container = document.getElementById('timeline-container');
+        const mouseY = e.touches[0].clientY;
+        
+        const elements = Array.from(container.children).filter(el => el.classList.contains('drag-item'));
+        
+        let hoverIndex = -1;
+        elements.forEach((el, index) => {
+            const rect = el.getBoundingClientRect();
+            // Using the center point logic to determine the drop target for touch reordering
+            const center = rect.top + rect.height / 2;
+            if (mouseY > rect.top && mouseY < rect.bottom && index !== draggedActivityIdx) {
+                if (mouseY > center) {
+                    hoverIndex = index + 1;
+                } else {
+                    hoverIndex = index;
+                }
+            }
+        });
+
+        if (hoverIndex !== -1 && hoverIndex !== draggedActivityIdx && hoverIndex !== draggedActivityIdx + 1) {
+            const activities = tripData.days[`Day ${currentDay}`].activities;
+            const item = activities.splice(draggedActivityIdx, 1)[0];
+            activities.splice(hoverIndex - (hoverIndex > draggedActivityIdx ? 1 : 0), 0, item);
+            
+            draggedActivityIdx = hoverIndex - (hoverIndex > draggedActivityIdx ? 1 : 0);
+            saveCurrentTrip();
+            renderTimeline(); 
+            
+            const reRenderedItem = document.querySelector(`div[data-index="${draggedActivityIdx}"]`);
+            if (reRenderedItem) {
+                touchTargetActivityItem = reRenderedItem;
+                touchTargetActivityItem.classList.add('dragging');
+            }
+        }
+    }
+
+    function handleActivityTouchEnd(e) { 
+        if(!touchTargetActivityItem) return; 
+        
+        touchTargetActivityItem.classList.remove('dragging'); 
+        
+        touchTargetActivityItem = null;
+        draggedActivityIdx = null;
+    }
+    // ★★★ 結束新增處 ★★★
 
     function updateBudgetSummary() {
         let total = 0;
