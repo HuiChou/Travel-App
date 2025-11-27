@@ -144,44 +144,50 @@
 
       <div class="sticky top-0 z-40 bg-paper/95 backdrop-blur-sm border-b border-gray-200/50 py-2 shadow-sm transition-all duration-300">
         <div class="flex items-center justify-between w-full px-4 md:px-8 h-[70px]">
-            <div id="day-scroll-container" class="smooth-scroll-container flex items-center overflow-x-auto no-scrollbar gap-3 flex-1 pr-4 min-w-0"></div>
-            
-            <div class="flex items-center justify-end border-l border-gray-200/50 pl-3 gap-3 relative bg-gradient-to-l from-paper via-paper to-transparent pl-4 ml-auto">
-                <div id="travelers-breakdown" class="hidden md:flex items-center gap-2 overflow-x-auto no-scrollbar max-w-[600px]"></div>
-                <div class="flex flex-col items-end min-w-[90px] cursor-pointer" onclick="switchTab('chart')">
-                    <p class="text-[9px] text-gray-400 font-sans tracking-wider uppercase mb-0.5">TOTAL</p>
-                    <p class="text-lg font-serif font-bold text-[var(--theme-color)] leading-none" id="header-total-base">¥ 0</p>
-                    <p class="text-[10px] text-gray-400 leading-none mt-0.5" id="header-total-target">≈ NT$ 0</p>
-                </div>
-                <select id="currency-select" onchange="toggleCurrency(this.value)" class="ml-2 text-xs font-bold bg-transparent border-none focus:ring-0 text-gray-500 cursor-pointer">
-                    <option value="JPY">¥ JPY</option>
-                    <option value="TWD">NT$</option>
-                </select>
+            <div id="day-scroll-container" class="smooth-scroll-container flex items-center overflow-x-auto no-scrollbar gap-3 flex-1 min-w-0"></div>
             </div>
-        </div>
       </div>
 
       <main class="px-5 py-6 max-w-2xl mx-auto min-h-[60vh] relative">
-        <div class="mb-6 animate-slide-up flex items-end justify-between">
-            <div>
-                <h2 id="current-day-heading" class="text-4xl font-serif font-black text-ink tracking-tight">Day 1</h2>
-                <div class="flex items-center gap-2 mt-1">
-                    <span id="current-date-text" class="text-xs text-sub font-sans tracking-wide">--</span>
-                    <span class="w-1 h-1 rounded-full bg-gray-300"></span>
-                    <span id="current-location-text" class="text-xs text-[var(--theme-color)] font-bold uppercase tracking-widest font-sans">LOCATION</span>
+        <div class="mb-6 animate-slide-up">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <h2 id="current-day-heading" class="text-4xl font-serif font-black text-ink tracking-tight">Day 1</h2>
+                    
+                    <div class="flex items-center gap-3 bg-white/80 backdrop-blur px-3 py-1.5 rounded-2xl border border-gray-200/60 shadow-sm hover:shadow-md transition-all cursor-pointer select-none">
+                        <div id="travelers-breakdown" class="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[140px] md:max-w-[200px]"></div>
+                        
+                        <div class="flex flex-col items-end min-w-[70px]" onclick="switchTab('chart')">
+                            <p class="text-[9px] text-gray-400 font-sans tracking-wider uppercase mb-0.5">TOTAL</p>
+                            <p class="text-lg font-serif font-bold text-[var(--theme-color)] leading-none" id="header-total-base">¥ 0</p>
+                            <p class="text-[10px] text-gray-400 leading-none mt-0.5" id="header-total-target">≈ NT$ 0</p>
+                        </div>
+                        <select id="currency-select" onchange="toggleCurrency(this.value)" class="ml-1 text-xs font-bold bg-transparent border-none focus:ring-0 text-gray-500 cursor-pointer pl-0">
+                            <option value="JPY">¥ JPY</option>
+                            <option value="TWD">NT$</option>
+                        </select>
+                    </div>
                 </div>
-                <div id="quick-add-act-btn" class="mt-4"> 
-                    <button onclick="addActivity()" class="capsule-btn bg-white border-[var(--theme-color)] text-[var(--theme-color)] hover:bg-gray-50 shadow-md">
-                        <span>＋</span> 新增活動節點
-                    </button>
+
+                <div id="template-actions" class="hidden flex gap-2">
+                    <button onclick="applyDayTemplate('departure')" class="capsule-btn"><span>🏠</span> 出發</button>
+                    <button onclick="applyDayTemplate('general')" class="capsule-btn"><span>📍</span> 觀光</button>
+                    <button onclick="applyDayTemplate('return')" class="capsule-btn"><span>✈️</span> 回程</button>
                 </div>
-                </div>
-            <div id="template-actions" class="hidden flex gap-2">
-                <button onclick="applyDayTemplate('departure')" class="capsule-btn"><span>🏠</span> 出發</button>
-                <button onclick="applyDayTemplate('general')" class="capsule-btn"><span>📍</span> 觀光</button>
-                <button onclick="applyDayTemplate('return')" class="capsule-btn"><span>✈️</span> 回程</button>
+            </div>
+
+            <div class="flex items-center gap-2 mt-1 ml-1">
+                <span id="current-date-text" class="text-xs text-sub font-sans tracking-wide">--</span>
+                <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                <span id="current-location-text" class="text-xs text-[var(--theme-color)] font-bold uppercase tracking-widest font-sans">LOCATION</span>
+            </div>
+            <div id="quick-add-act-btn" class="mt-4"> 
+                <button onclick="addActivity()" class="capsule-btn bg-white border-[var(--theme-color)] text-[var(--theme-color)] hover:bg-gray-50 shadow-md">
+                    <span>＋</span> 新增活動節點
+                </button>
             </div>
         </div>
+
         <div class="relative pl-4 pb-20">
           <div class="timeline-line"></div>
           <div id="timeline-container" class="space-y-6"></div>
