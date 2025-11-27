@@ -122,19 +122,19 @@
       </div>
   </div>
 
-  <div id="screen-project-list" class="min-h-screen px-6 py-10 flex flex-col items-center">
-      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2 tracking-widest">我的旅程</h1>
-      <p class="text-xs text-sub mb-8 font-sans tracking-wider">SELECT YOUR JOURNEY</p>
+  <div id="screen-project-list" class="min-h-screen px-6 py-10 flex flex-col items-center bg-[#53565C]">
+      <h1 class="text-3xl font-serif font-bold text-white mb-2 tracking-widest">我的旅程</h1>
+      <p class="text-xs text-gray-300 mb-8 font-sans tracking-wider">SELECT YOUR JOURNEY</p>
       <div id="project-list-container" class="w-full max-w-md space-y-4"></div>
-      <button onclick="createNewProject()" class="mt-8 btn-primary"><span>＋ 規劃新旅程</span></button>
+      <button onclick="createNewProject()" class="mt-8 px-6 py-3 bg-white text-[#53565C] rounded-xl font-bold text-sm shadow-lg hover:bg-gray-100 transition flex items-center gap-2"><span>＋ 規劃新旅程</span></button>
   </div>
 
   <div id="screen-itinerary" class="hidden transition-opacity duration-500">
-      <header class="relative h-[240px] w-full overflow-hidden group">
+      <header class="relative h-[180px] w-full overflow-hidden group">
         <div class="absolute inset-0 bg-black/30 z-10"></div>
         <img id="hero-image" src="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Cover">
         <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white pt-4 px-6" id="header-content"></div>
-        <div class="absolute top-3 right-3 md:top-4 md:right-4 flex flex-row md:flex-col gap-2 md:gap-3 z-50 scale-90 md:scale-100 origin-top-right">
+        <div class="absolute top-3 right-3 md:top-4 md:right-4 flex flex-row gap-2 md:gap-3 z-50 scale-90 md:scale-100 origin-top-right">
             <button onclick="toggleSettings()" class="float-btn" title="設定"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
             <button onclick="toggleContentEdit()" id="edit-content-btn" class="float-btn" title="編輯行程"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z" /></svg></button>
             <button onclick="exportAllPdf()" class="float-btn" title="輸出 PDF"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg></button>
@@ -305,7 +305,7 @@
     let myChart = null;
     let categoryChart = null;
     let draggedExpenseIdx = null;
-    let draggedActivityIdx = null; // ★★★ 修改處 1: 新增活動卡片拖曳索引 ★★★
+    let draggedActivityIdx = null; 
     let currentListTab = 'checklist';
     let activeCategoryFilter = null;
     let currentDisplayCurrency = 'JPY'; 
@@ -319,6 +319,28 @@
         return: [ { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: {} }, { time: "16:00", icon: "🏠", label: "HOME", location: "返抵國門", address:"", desc: "平安回家", costType: "行", expenseDetail: "機捷", currency: "TWD", splits: {} } ]
     };
     const CHECKLIST_PRESETS = { 2: ["身分證/健保卡", "手機/充電器", "換洗衣物", "盥洗用品", "錢包"], 3: ["身分證/健保卡", "手機/充電器", "行動電源", "換洗衣物", "盥洗用品", "錢包", "常備藥品"], 5: ["護照/簽證", "外幣/信用卡", "網卡", "手機/充電器", "行動電源", "轉接頭", "衣物", "盥洗用品", "藥品", "雨具"], 8: ["護照/簽證", "外幣", "網卡", "手機/充電器", "行動電源", "轉接頭", "延長線", "足夠衣物", "好走的鞋", "盥洗/保養品", "藥品", "雨具", "指甲剪"] };
+
+    // 修正後的產生主題色系函數：每位使用者比前一位淺 20%
+    function generateThemePalette(baseHex, index, total) {
+        let r = parseInt(baseHex.slice(1, 3), 16);
+        let g = parseInt(baseHex.slice(3, 5), 16);
+        let b = parseInt(baseHex.slice(5, 7), 16);
+        
+        // 第一個(自己)保持原色
+        if (index === 0) return baseHex; 
+        
+        // 後續人員依序變淺 20% (與白色的混合比例 0.2, 0.4, 0.6...)
+        // 取餘數確保不會全白
+        const lightingStep = 0.6; 
+        const factor = (index * lightingStep) % 0.8; 
+        
+        r = Math.round(r + (255 - r) * factor);
+        g = Math.round(g + (255 - g) * factor);
+        b = Math.round(b + (255 - b) * factor);
+
+        const toHex = (c) => ('0' + c.toString(16)).slice(-2);
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
 
     function init() { loadProjects(); renderProjectList(); }
     function loadProjects() { const raw=localStorage.getItem('trip_projects_v30'); if(raw)projects=JSON.parse(raw); else { projects=[{id:'default',name:'2026阪京之旅',themeColor:'#C6A664',updatedAt:new Date().toISOString()}]; localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); saveTripData('default',{theme:"2026阪京之旅",startDate:"2026-01-17",endDate:"2026-01-22",bannerUrl:"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop",themeColor:"#C6A664",exchangeRate:0.215,checklist:[],shoppingList:[],expenses:[],travelers:['自己','公費'],days:{}}); } }
@@ -368,7 +390,11 @@
         COLORS[0] = tripData.themeColor;
     }
     
-    function renderHeader() { document.getElementById('hero-image').src=tripData.bannerUrl; const c=document.getElementById('header-content'); c.innerHTML=`<div class="text-[10px] tracking-[0.2em] uppercase opacity-80 mb-2 font-sans animate-slide-up">Travel Itinerary</div><h1 class="text-3xl font-serif font-bold tracking-widest drop-shadow-lg text-center px-4 animate-slide-up">${tripData.theme}</h1><p class="mt-2 text-xs font-light tracking-wider opacity-90 font-sans animate-slide-up">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>`;
+    function renderHeader() { 
+        document.getElementById('hero-image').src=tripData.bannerUrl; 
+        const c=document.getElementById('header-content'); 
+        c.innerHTML=`<div class="text-[10px] tracking-[0.2em] uppercase opacity-80 mb-2 font-sans animate-slide-up font-bold">Travel Itinerary</div><h1 class="text-3xl font-serif font-bold tracking-widest drop-shadow-lg text-center px-4 animate-slide-up">${tripData.theme}</h1><p class="mt-2 text-xs font-bold tracking-wider opacity-90 font-sans animate-slide-up">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>`;
+        
         document.getElementById('edit-theme').value = tripData.theme;
         document.getElementById('edit-start-date').value = tripData.startDate;
         document.getElementById('edit-end-date').value = tripData.endDate;
@@ -500,26 +526,24 @@
     function renderDayTabs() { const c=document.getElementById('day-scroll-container'); c.innerHTML=''; Object.keys(tripData.days).forEach((k,idx)=>{ const i=idx+1, btn=document.createElement('button'), active=i===currentDay; btn.className=`smooth-scroll-item flex-shrink-0 w-[56px] h-[56px] flex flex-col items-center justify-center transition-all duration-300 snap-start ${active?'day-tab-active':'day-tab-inactive'}`; btn.onclick=()=>{currentDay=i; renderDayTabs(); renderTimeline(); updateDayHeader(); btn.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})}; btn.innerHTML=`<span class="text-[9px] uppercase font-sans opacity-80">Day</span><span class="text-lg font-serif font-bold leading-none mt-0.5">${i}</span>`; c.appendChild(btn); }); }
     function applyDayTemplate(t) { if(confirm("套用模板？")) { tripData.days[`Day ${currentDay}`].activities=JSON.parse(JSON.stringify(TEMPLATES[t])); renderTimeline(); saveCurrentTrip(); } }
     
-    // **Render Timeline (Restored Layout + Single Item Edit + Currency Support)**
+    // Render Timeline (包含新的拖曳 Handle、新圖示與顏色邏輯)
     function renderTimeline() {
         const c=document.getElementById('timeline-container'); c.innerHTML='';
         const activities = tripData.days[`Day ${currentDay}`]?.activities || [];
+        
         activities.forEach((act, idx) => {
             if(!act.splits) act.splits = {};
-            if(!act.currency) act.currency = 'JPY'; // Default currency if missing
+            if(!act.currency) act.currency = 'JPY';
 
             let totalCost = 0;
             Object.values(act.splits).forEach(v => totalCost += (parseInt(v)||0));
             
-            // Calculate secondary currency for display in panel
             let secondaryCostDisplay = '';
             const rate = tripData.exchangeRate || 0.215;
-            
             if(act.currency === 'JPY') {
                 const twdVal = Math.round(totalCost * rate);
                 secondaryCostDisplay = `≈ NT$ ${twdVal}`;
             } else {
-                // If base is TWD
                 const jpyVal = Math.round(totalCost / rate);
                 secondaryCostDisplay = `(¥ ${jpyVal})`;
             }
@@ -530,12 +554,10 @@
             else isExpanded = (totalCost > 0);
 
             const el=document.createElement('div'); 
-            el.className='relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group animate-slide-up bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item'; // ★★★ 修改處 2: 新增 drag-item class ★★★
+            el.className='relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group animate-slide-up bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item'; 
             el.style.animationDelay=`${idx*0.05}s`;
             el.dataset.index = idx;
-            el.draggable = true; // ★★★ 修改處 3: 允許拖曳 ★★★
 
-            // ★★★ 修改處 4: 新增拖曳監聽器 ★★★
             el.addEventListener('dragstart', handleActivityDragStart); 
             el.addEventListener('dragover', handleActivityDragOver); 
             el.addEventListener('drop', handleActivityDrop); 
@@ -546,57 +568,59 @@
             const dot = document.createElement('div'); dot.className = 'timeline-dot'; c.appendChild(dot);
 
             let splitsHtml = '';
-            // Currency Symbol for this specific card
             const cardSymbol = act.currency === 'TWD' ? 'NT$' : '¥';
 
             tripData.travelers.forEach((p, pIdx) => {
                 const val = act.splits[p] || '';
-                const color = COLORS[pIdx % COLORS.length];
+                const color = generateThemePalette(tripData.themeColor, pIdx, tripData.travelers.length);
                 splitsHtml += `<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-2"><div class="avatar-circle" style="background-color:${color};width:24px;height:24px;font-size:10px;">${p.substring(0,1)}</div><span class="text-xs text-gray-500 w-12 truncate">${p}</span></div><div class="flex items-baseline gap-1"><span class="text-[10px] text-gray-400">${cardSymbol}</span><input type="number" value="${val}" onchange="updateSplit(${idx}, '${p}', this.value)" class="w-20 text-base font-bold text-ink bg-transparent border-b border-gray-300 text-right focus:border-[var(--theme-color)]" placeholder="0"></div></div>`;
             });
-            const addressHtml = act.address ? `<div class="flex items-center gap-2 mb-2 mt-2 text-xs text-gray-400 font-sans group/addr"><span class="truncate max-w-[200px]">${act.address}</span><button onclick="copyAddress('${act.address}')" class="opacity-50 hover:opacity-100 hover:text-[var(--theme-color)] transition" title="複製地址">📋</button></div>` : '';
+
+            const addressHtml = act.address ? `<div class="flex items-start gap-2 mb-2 mt-2 text-xs text-gray-400 font-sans group/addr"><span class="flex-shrink-0 mt-0.5">📮</span><span class="truncate max-w-[200px] select-text">${act.address}</span><button onclick="copyAddress('${act.address}')" class="opacity-50 hover:opacity-100 hover:text-[var(--theme-color)] transition" title="複製地址">📋</button></div>` : '';
+
+            const descHtml = act.desc ? `<div class="flex items-start gap-2 mb-3 mt-2 text-xs font-bold text-gray-500 font-sans select-text"><span class="flex-shrink-0 mt-0.5">📝</span><p class="whitespace-pre-wrap leading-relaxed">${act.desc}</p></div>` : '';
+
+            const dragHandleHtml = `
+                <div class="drag-handle-btn cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-[var(--theme-color)] flex items-center justify-center transition" title="拖曳排序" draggable="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                </div>
+            `;
 
             const editModeHtml = `
                 <div class="edit-mode hidden w-full p-4 bg-white">
                     <div class="flex gap-2 mb-3">
                         <input type="text" class="edit-icon w-10 text-center bg-gray-50 rounded border border-gray-200 py-1" value="${act.icon}">
+                        <input type="text" class="edit-label flex-1 text-base font-sans text-ink border border-gray-200 rounded px-2 py-1" value="${act.label||''}" placeholder="活動標籤">
                         <input type="time" class="edit-time font-sans text-sm text-gray-600 border border-gray-200 rounded px-2 py-1" value="${act.time}">
-                        <input type="text" class="edit-label flex-1 text-xs text-[var(--theme-color)] font-bold text-right border border-gray-200 rounded px-2 py-1" value="${act.label||''}" placeholder="標籤 (e.g. LUNCH)">
                     </div>
                     <input type="text" class="edit-location w-full text-lg font-serif font-bold text-ink mb-2 border-b border-gray-300 pb-1" value="${act.location}" placeholder="地點名稱">
                     <div class="flex gap-2 mb-2 bg-gray-50 p-2 rounded">
                         <span class="text-xs">📮</span>
                         <input type="text" class="edit-address w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.address||''}" placeholder="輸入地址">
                     </div>
-                    <div class="mb-3">
-                        <label class="text-xs text-gray-400 block mb-1">計費幣別</label>
-                        <select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white">
-                            <option value="JPY" ${act.currency === 'JPY' ? 'selected' : ''}>¥ JPY 日幣</option>
-                            <option value="TWD" ${act.currency === 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option>
-                        </select>
-                    </div>
+                    <div class="mb-3"><label class="text-xs text-gray-400 block mb-1">計費幣別</label><select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white"><option value="JPY" ${act.currency === 'JPY' ? 'selected' : ''}>¥ JPY 日幣</option><option value="TWD" ${act.currency === 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option></select></div>
                     <textarea class="edit-desc w-full text-sm text-sub resize-none h-20 border border-gray-200 rounded p-2 mb-3" placeholder="備註...">${act.desc||''}</textarea>
-                    <div class="flex gap-2">
-                        <button onclick="saveActivity(${idx})" class="flex-1 py-2 bg-[var(--theme-color)] text-white text-xs rounded shadow font-bold">儲存修改</button>
-                        <button onclick="toggleEditActivity(${idx})" class="px-4 py-2 bg-gray-100 text-gray-500 text-xs rounded shadow">取消</button>
-                    </div>
+                    <div class="flex gap-2"><button onclick="saveActivity(${idx})" class="flex-1 py-2 bg-[var(--theme-color)] text-white text-xs rounded shadow font-bold">儲存修改</button><button onclick="toggleEditActivity(${idx})" class="px-4 py-2 bg-gray-100 text-gray-500 text-xs rounded shadow">取消</button></div>
                 </div>
             `;
 
             el.innerHTML = `
                 <div class="view-mode w-full flex flex-col md:flex-row relative">
-                     <div class="absolute top-3 right-3 flex gap-1 z-10 card-actions">
-                        <button onclick="event.stopPropagation(); toggleEditActivity(${idx})" class="w-7 h-7 rounded-full bg-gray-100 hover:bg-[var(--theme-color)] hover:text-white transition flex items-center justify-center text-gray-400 shadow-sm" title="編輯">✎</button>
-                        <button onclick="event.stopPropagation(); deleteAct(${idx})" class="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-500 hover:text-white transition flex items-center justify-center text-rose-300 shadow-sm" title="刪除">✕</button>
+                    <div class="absolute top-2 right-2 flex items-center gap-1 z-10 card-actions bg-white/80 backdrop-blur rounded-full pl-1">
+                        ${dragHandleHtml}
+                        <div class="w-[1px] h-4 bg-gray-200 mx-1"></div>
+                        <button onclick="event.stopPropagation(); toggleEditActivity(${idx})" class="w-7 h-7 rounded-full hover:bg-[var(--theme-color)] hover:text-white transition flex items-center justify-center text-gray-400" title="編輯">✎</button>
+                        <button onclick="event.stopPropagation(); deleteAct(${idx})" class="w-7 h-7 rounded-full hover:bg-rose-500 hover:text-white transition flex items-center justify-center text-rose-300" title="刪除">✕</button>
                     </div>
                     <div class="p-5 w-full md:flex-1 md:w-auto transition-all duration-300 relative">
                         <div class="flex items-center gap-3 mb-2">
                             <span class="text-xs font-sans text-gray-400 tracking-widest">${act.time}</span>
                             <span class="text-[10px] text-[var(--theme-color)] font-bold tracking-[0.2em] uppercase font-sans bg-[var(--theme-color)]/5 px-2 py-0.5 rounded">${act.label||'VISIT'}</span>
                         </div>
-                        <h3 class="text-2xl font-serif font-bold text-ink leading-tight flex items-center gap-2">${act.icon} ${act.location}</h3>
+                        <h3 class="text-2xl font-serif font-bold text-ink leading-tight flex items-center gap-2 select-text">${act.icon} ${act.location}</h3>
                         ${addressHtml}
-                        <p class="text-sm text-sub font-sans mb-2 whitespace-pre-wrap mt-1">${act.desc||''}</p>
+                        ${descHtml}
+                        
                         <div class="flex gap-2 mt-auto pt-2">
                             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.address || act.location)}" target="_blank" class="bg-gray-50 hover:bg-sky-50 text-gray-400 hover:text-sky-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" onclick="event.stopPropagation()">🗺️ 導航</a>
                             <button onclick="togglePanel(${idx})" class="bg-gray-50 hover:bg-[var(--theme-color)]/10 text-gray-400 hover:text-[var(--theme-color)] px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${isExpanded ? 'bg-[var(--theme-color)]/10 text-[var(--theme-color)]' : ''}">💴 ${isExpanded ? '收起' : '記帳'}</button>
@@ -613,7 +637,7 @@
                                 </select>
                                 <span class="text-xs text-gray-400 ml-auto">多人分帳</span>
                             </div>
-                            <div class="mb-2"><input type="text" value="${act.expenseDetail || ''}" onchange="updateAct(${idx},'expenseDetail',this.value)" class="w-full text-xs border-b border-gray-200 py-1 bg-transparent focus:border-[var(--theme-color)]" placeholder="消費細項 (例如: 牛肉麵)"></div>
+                            <div class="mb-2"><input type="text" value="${act.expenseDetail || ''}" onchange="updateAct(${idx},'expenseDetail',this.value)" class="w-full text-xs border-b border-gray-200 py-1 bg-transparent focus:border-[var(--theme-color)]" placeholder="消費細項"></div>
                             ${splitsHtml}
                             <div class="flex items-baseline justify-between pt-2 border-t border-gray-200/50 mt-2">
                                 <span class="text-xs text-gray-400 font-bold">TOTAL</span>
@@ -809,8 +833,11 @@
     function handleTouchMove(e) { if(!touchTargetItem) return; e.preventDefault(); }
     function handleTouchEnd(e) { if(!touchTargetItem) return; touchTargetItem.classList.remove('dragging'); const endY = e.changedTouches[0].clientY; const diff = endY - touchStartY; const idx = +touchTargetItem.dataset.index; if (Math.abs(diff) > 40) { const targetIdx = diff > 0 ? idx + 1 : idx - 1; if (targetIdx >= 0 && targetIdx < tripData.expenses.length) { const item = tripData.expenses.splice(idx, 1)[0]; tripData.expenses.splice(targetIdx, 0, item); saveCurrentTrip(); renderExpensesList(); } } touchTargetItem = null; }
 
-    // ★★★ 修改處 5: 行程活動卡片拖曳邏輯 (新增) ★★★
     function handleActivityDragStart(e) { 
+        if (!e.target.closest('.drag-handle-btn')) {
+            e.preventDefault();
+            return;
+        }
         draggedActivityIdx = +this.dataset.index; 
         this.classList.add('dragging'); 
         e.dataTransfer.effectAllowed = 'move'; 
@@ -843,12 +870,12 @@
 
     function handleActivityTouchStart(e) { 
         if (e.target.closest('input, textarea, select, button, a')) return;
-        
+        if (!e.target.closest('.drag-handle-btn')) return;
+
         touchTargetActivityItem = e.target.closest('.drag-item'); 
         if (!touchTargetActivityItem) return;
 
         e.preventDefault(); 
-        
         draggedActivityIdx = +touchTargetActivityItem.dataset.index;
         touchStartActivityY = e.touches[0].clientY;
         touchTargetActivityItem.classList.add('dragging');
@@ -866,7 +893,6 @@
         let hoverIndex = -1;
         elements.forEach((el, index) => {
             const rect = el.getBoundingClientRect();
-            // Using the center point logic to determine the drop target for touch reordering
             const center = rect.top + rect.height / 2;
             if (mouseY > rect.top && mouseY < rect.bottom && index !== draggedActivityIdx) {
                 if (mouseY > center) {
@@ -896,13 +922,10 @@
 
     function handleActivityTouchEnd(e) { 
         if(!touchTargetActivityItem) return; 
-        
         touchTargetActivityItem.classList.remove('dragging'); 
-        
         touchTargetActivityItem = null;
         draggedActivityIdx = null;
     }
-    // ★★★ 結束新增處 ★★★
 
     function updateBudgetSummary() {
         let total = 0;
@@ -918,7 +941,6 @@
 
         const rate = tripData.exchangeRate;
 
-        // Helper to normalize amount to the TARGET Display Currency
         const normalize = (amount, sourceCurrency, targetCurrency) => {
             if (sourceCurrency === targetCurrency) return amount;
             if (sourceCurrency === 'JPY' && targetCurrency === 'TWD') return Math.round(amount * rate);
@@ -930,30 +952,24 @@
         Object.values(tripData.days).forEach(d=>d.activities?.forEach(a=>{
             if(a.splits) {
                 const type = a.costType || '雜';
-                // Default to JPY if missing
                 const sourceCurr = a.currency || 'JPY'; 
                 
                 Object.entries(a.splits).forEach(([payer, amt]) => {
                     const val = parseInt(amt)||0;
                     if(val > 0) {
-                        // Convert value to the GLOBAL DISPLAY currency for summation
                         const normalizedVal = normalize(val, sourceCurr, currentDisplayCurrency);
                         total += normalizedVal;
-
-                        // Payer Breakdown also needs to be in Global Display Currency
                         window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
                         
-                        // Categories need to be normalized too? Yes for charts
                         if(!window.personCategoryBreakdown[payer]) window.personCategoryBreakdown[payer] = {};
                         window.personCategoryBreakdown[payer][type] = (window.personCategoryBreakdown[payer][type] || 0) + normalizedVal;
                         
-                        // Category breakdown list items
                         if(!window.categoryBreakdownTotal[type]) window.categoryBreakdownTotal[type] = {total:0, items:[]};
                         window.categoryBreakdownTotal[type].total += normalizedVal;
                         window.categoryBreakdownTotal[type].items.push({
                             name: a.location,
                             detail: a.expenseDetail || '',
-                            amount: normalizedVal, // Stored as Display Currency Value
+                            amount: normalizedVal, 
                             payer: payer,
                             date: d.date
                         });
@@ -962,12 +978,11 @@
             }
         }));
         
-        // 2. Expenses List Costs (Assume JPY for now as per previous logic, or we could add currency field to expenses list too. Defaulting JPY to keep logic consistent with existing data)
+        // 2. Expenses List Costs
         tripData.expenses.forEach(exp => {
             const val = parseInt(exp.amount) || 0;
             const payer = exp.payer;
             if (val > 0 && payer) {
-                // Expenses list items currently assumed JPY based on previous code "¥" symbol
                 const sourceCurr = 'JPY'; 
                 const normalizedVal = normalize(val, sourceCurr, currentDisplayCurrency);
 
@@ -992,14 +1007,11 @@
         const headerTotalBase = document.getElementById('header-total-base');
         const headerTotalTarget = document.getElementById('header-total-target');
 
-        // Total Display
         if(currentDisplayCurrency === 'TWD') {
             headerTotalBase.textContent = `NT$ ${total.toLocaleString()}`;
-            // Approx JPY
             headerTotalTarget.textContent = `(¥ ${Math.round(total / rate).toLocaleString()})`;
         } else {
             headerTotalBase.textContent = `¥ ${total.toLocaleString()}`;
-            // Approx TWD
             headerTotalTarget.textContent = `≈ NT$ ${Math.round(total * rate).toLocaleString()}`;
         }
         
@@ -1008,7 +1020,7 @@
         tripData.travelers.forEach((p, idx) => {
             let amt = window.payerBreakdown[p] || 0;
             let displayAmt = currentDisplayCurrency === 'TWD' ? `NT$${amt.toLocaleString()}` : `¥${amt.toLocaleString()}`;
-            const color = COLORS[idx % COLORS.length];
+            const color = generateThemePalette(tripData.themeColor, idx, tripData.travelers.length);
             breakdownEl.innerHTML += `<div class="flex items-center flex-shrink-0 bg-white rounded-full pr-3 py-1 border border-gray-100 shadow-sm"><div class="avatar-circle mr-2" style="width:32px;height:32px;font-size:12px;background-color:${color};border-color:${color}">${p.substring(0,1)}</div><span class="text-xs text-gray-700 font-bold">${displayAmt}</span></div>`;
         });
     }
@@ -1027,7 +1039,7 @@
         if(myChart)myChart.destroy(); 
         const bgColors = labels.map(name => {
             const idx = tripData.travelers.indexOf(name);
-            return idx >= 0 ? COLORS[idx % COLORS.length] : '#ccc';
+            return idx >= 0 ? generateThemePalette(tripData.themeColor, idx, tripData.travelers.length) : '#ccc';
         });
         
         myChart=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:bgColors,borderWidth:0}]},options:{responsive:true,plugins:{legend:{position:'bottom'}}}}); 
