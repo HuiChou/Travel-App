@@ -152,7 +152,7 @@
         <div class="mb-6 animate-slide-up">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
-                    <h2 id="current-day-heading" class="text-4xl font-serif font-black text-ink tracking-tight">Day 1</h2>
+                    <h2 id="current-day-heading" class="text-2xl md:text-4xl font-serif font-black text-ink tracking-tight">Day 1</h2>
                     
                     <div class="flex items-center gap-3 bg-white/80 backdrop-blur px-3 py-1.5 rounded-2xl border border-gray-200/60 shadow-sm hover:shadow-md transition-all cursor-pointer select-none">
                         <div id="travelers-breakdown" class="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[140px] md:max-w-[200px]"></div>
@@ -364,7 +364,16 @@
     }
     
     function highlightNav(id){ const btn=document.getElementById(id); if(btn){ btn.querySelector('svg').classList.replace('text-gray-400','text-[var(--theme-color)]'); btn.querySelector('span').classList.replace('text-gray-400','text-[var(--theme-color)]'); } }
-    function renderProjectList() { document.getElementById('screen-project-list').classList.remove('hidden'); const c=document.getElementById('project-list-container'); c.innerHTML=''; projects.forEach(p=>{ const el=document.createElement('div'); el.className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:border-gray-300 transition cursor-pointer group"; el.onclick=()=>enterProject(p.id); el.innerHTML=`<div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background-color:${p.themeColor}">${p.name.substring(0,1)}</div><div><h3 class="font-bold text-ink group-hover:text-[var(--theme-color)] transition">${p.name}</h3><p class="text-[10px] text-gray-400 font-sans">${p.updatedAt.split('T')[0]} 更新</p></div></div><button onclick="event.stopPropagation(); deleteProject('${p.id}')" class="text-gray-300 hover:text-rose-400 p-2">🗑</button>`; c.appendChild(el); }); }
+    
+    function renderProjectList() { 
+        // 1. 在列表模式下，強制將主題色設為背景色 (#53565C)，讓按鈕看起來與背景一致
+        document.documentElement.style.setProperty('--theme-color', '#53565C');
+        
+        document.getElementById('screen-project-list').classList.remove('hidden'); 
+        const c=document.getElementById('project-list-container'); c.innerHTML=''; 
+        projects.forEach(p=>{ const el=document.createElement('div'); el.className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center hover:border-gray-300 transition cursor-pointer group"; el.onclick=()=>enterProject(p.id); el.innerHTML=`<div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style="background-color:${p.themeColor}">${p.name.substring(0,1)}</div><div><h3 class="font-bold text-ink group-hover:text-[var(--theme-color)] transition">${p.name}</h3><p class="text-[10px] text-gray-400 font-sans">${p.updatedAt.split('T')[0]} 更新</p></div></div><button onclick="event.stopPropagation(); deleteProject('${p.id}')" class="text-gray-300 hover:text-rose-400 p-2">🗑</button>`; c.appendChild(el); }); 
+    }
+    
     function createNewProject() { const id='proj_'+Date.now(); projects.push({id,name:'新的旅程',themeColor:'#C6A664',updatedAt:new Date().toISOString()}); localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); saveTripData(id,{theme:"新的旅程",startDate:new Date().toISOString().split('T')[0],endDate:new Date().toISOString().split('T')[0],bannerUrl:"https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop",themeColor:"#C6A664",exchangeRate:0.215,checklist:[],shoppingList:[],expenses:[],travelers:['自己'],days:{}}); renderProjectList(); }
     function deleteProject(id) { if(confirm('確定刪除？')){ projects=projects.filter(p=>p.id!==id); localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); localStorage.removeItem('trip_data_'+id); renderProjectList(); } }
     
@@ -379,7 +388,7 @@
         if(!tripData.travelers) tripData.travelers=['自己','公費']; 
         if(Object.keys(tripData.days).length===0) updateDateRange(); 
         switchTab('itinerary'); 
-        applyTheme(); 
+        applyTheme(); // 2. 這裡會讀取 tripData.themeColor 並重新設定 CSS 變數，恢復原本主題色
         renderHeader(); 
         renderDayTabs(); 
         renderTimeline(); 
