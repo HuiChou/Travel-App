@@ -546,16 +546,27 @@
     function renderTravelerSelect(actIndex, splitId, selectedPerson, travelers, fieldName) {
         const id = `${fieldName}-${actIndex}-${splitId}`;
         let options = '';
+        
+        // 1. 正常旅伴
         travelers.forEach(t => {
             options += `<option value="${t}" ${t === selectedPerson ? 'selected' : ''}>${t}</option>`;
         });
         
-        const colorIdx = travelers.indexOf(selectedPerson);
-        const color = colorIdx >= 0 ? generateThemePalette(tripData.themeColor, colorIdx, travelers.length) : '#ccc';
-        const initial = selectedPerson.substring(0,1);
+        // 2. 加入固定「均攤」選項 (僅在受益人/歸屬人欄位顯示)
+        if (fieldName === 'beneficiary') {
+             options += `<option value="均攤" ${'均攤' === selectedPerson ? 'selected' : ''}>均攤 (所有人平分)</option>`;
+        }
         
-        // 針對 Beneficiary，我們需要綁定一個能同時更新數據和 UI 的函式
-        // 針對 Payer (標準 Select)，我們直接在 HTML 中使用 onchange
+        // 顯示邏輯 (顏色處理)
+        let color, initial;
+        if (selectedPerson === '均攤') {
+            color = '#64748b'; // 特殊灰色 for 均攤
+            initial = '均';
+        } else {
+            const colorIdx = travelers.indexOf(selectedPerson);
+            color = colorIdx >= 0 ? generateThemePalette(tripData.themeColor, colorIdx, travelers.length) : '#ccc';
+            initial = selectedPerson ? selectedPerson.substring(0,1) : '?';
+        }
         
         // 這是 Beneficiary 專用的結構
         return `
@@ -599,7 +610,7 @@
     }
     
     function createNewProject() { const id='proj_'+Date.now(); projects.push({id,name:'新的旅程',themeColor:'#C6A664',updatedAt:new Date().toISOString()}); localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); saveTripData(id,{theme:"新的旅程",startDate:new Date().toISOString().split('T')[0],endDate:new Date().toISOString().split('T')[0],bannerUrl:"https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2021&auto=format&fit=crop",themeColor:"#C6A664",exchangeRate:0.215,baseCurrency:'JPY',checklist:[],shoppingList:[],expenses:[],travelers:['自己'],days:{}}); renderProjectList(); }
-    function deleteProject(id) { if(confirm('確定刪除？')){ projects=projects.filter(p=>p.id!==id); localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); localStorage.removeItem('trip_data_'+id); renderProjectList(); } }
+    function deleteProject(id) { if(window.confirm('確定刪除？')){ projects=projects.filter(p=>p.id!==id); localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); localStorage.removeItem('trip_data_'+id); renderProjectList(); } }
     
     function enterProject(id) { 
         currentProjectId=id; 
@@ -647,8 +658,17 @@
         document.getElementById('edit-travelers').value = tripData.travelers.join(', ');
     }
     
+    // --- 通用 Toast 訊息函數 ---
+    function showToast(message) {
+        const b = document.getElementById('message-banner');
+        b.textContent = message;
+        b.classList.remove('-translate-y-full'); 
+        setTimeout(() => { b.classList.add('-translate-y-full'); }, 2500);
+    }
+
+    // --- 修正後的重置資料功能 (Fixed Reset Function) ---
     function resetAllData() {
-        if(confirm("警告！這將會「永久刪除」當前所有行程與設定，並重置為初始狀態。\n\n此操作只會影響「當前」專案，不會刪除其他旅程。\n\n確定要清空嗎？")) {
+        if(window.confirm("警告！這將會「永久刪除」當前所有行程與設定，並重置為初始狀態。\n\n此操作只會影響「當前」專案，不會刪除其他旅程。\n\n確定要清空嗎？")) {
             if(currentProjectId) {
                 const resetData = {
                     theme: "新的旅程",
@@ -674,7 +694,7 @@
                 renderTimeline();
                 updateBudgetSummary();
                 if(!document.getElementById('screen-chart').classList.contains('hidden')) { renderChartPage(); }
-                alert("專案已成功重置！");
+                showToast("專案已成功重置！"); // 使用 showToast 替換 alert
             }
         }
     }
@@ -715,7 +735,7 @@
                     a.splits?.forEach(s => {
                         // Migration and cleanup (already in previous submission, ensuring stability)
                         if(s.person) { s.beneficiary = s.person; delete s.person; } 
-                        if (!s.beneficiary || !newTravelers.includes(s.beneficiary)) s.beneficiary = defaultTraveler;
+                        if (!s.beneficiary || (!newTravelers.includes(s.beneficiary) && s.beneficiary !== '均攤')) s.beneficiary = defaultTraveler;
                         if (!s.payer || !newTravelers.includes(s.payer)) s.payer = defaultTraveler;
                     });
                     if(a.payer) delete a.payer; // Clean up old activity-level payer
@@ -724,7 +744,7 @@
             // Update expenses: if old traveler is removed, reset expenses' beneficiary/payer to first new traveler
             tripData.expenses.forEach(exp => {
                 if (!newTravelers.includes(exp.payer)) exp.payer = defaultTraveler;
-                if (!newTravelers.includes(exp.beneficiary)) exp.beneficiary = defaultTraveler;
+                if (!newTravelers.includes(exp.beneficiary) && exp.beneficiary !== '均攤') exp.beneficiary = defaultTraveler;
             });
 
         }
@@ -837,7 +857,7 @@
 
     function renderDayTabs() { const c=document.getElementById('day-scroll-container'); c.innerHTML=''; Object.keys(tripData.days).forEach((k,idx)=>{ const i=idx+1, btn=document.createElement('button'), active=i===currentDay; btn.className=`smooth-scroll-item flex-shrink-0 w-[56px] h-[56px] flex flex-col items-center justify-center transition-all duration-300 snap-start ${active?'day-tab-active':'day-tab-inactive'}`; btn.onclick=()=>{currentDay=i; renderDayTabs(); renderTimeline(); updateDayHeader(); btn.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})}; btn.innerHTML=`<span class="text-[9px] uppercase font-sans opacity-80">Day</span><span class="text-lg font-serif font-bold leading-none mt-0.5">${i}</span>`; c.appendChild(btn); }); }
     function applyDayTemplate(t) { 
-        if(confirm("套用模板？")) { 
+        if(window.confirm("套用模板？")) { 
             const defaultTraveler = tripData.travelers[0] || '自己';
             const defaultCurrency = tripData.baseCurrency || 'JPY';
             const defaultSplit = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: defaultCurrency }];
@@ -858,7 +878,7 @@
     }
     
     // Render Timeline 
-        // Render Timeline 
+    // Render Timeline (修正編輯模式下，時間欄位被擠出螢幕的問題 + 新增分帳標題)
     function renderTimeline() {
         const c=document.getElementById('timeline-container'); c.innerHTML='';
         const activities = tripData.days[`Day ${currentDay}`]?.activities || [];
@@ -867,7 +887,7 @@
         const defaultTraveler = tripData.travelers[0] || '自己';
 
         activities.forEach((act, idx) => {
-            // --- 確保 act.splits 為最新結構 (再次檢查，確保渲染前的穩定性) ---
+            // --- 資料結構確保 ---
             if (!act.splits || !Array.isArray(act.splits) || act.splits.length === 0) {
                 act.splits = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: act.currency || baseCurr }];
             } else {
@@ -879,12 +899,10 @@
                     return s;
                 });
             }
-            if(act.payer) delete act.payer; // Cleanup old activity-level payer
+            if(act.payer) delete act.payer; 
 
-
-            // Calculate total cost for display
+            // --- 計算顯示金額 ---
             let totalCost = act.splits.reduce((sum, s) => sum + (s.amount || 0), 0);
-            
             let secondaryCostDisplay = '';
             const rate = tripData.exchangeRate || 0.215;
             
@@ -906,6 +924,7 @@
             el.style.animationDelay=`${idx*0.05}s`;
             el.dataset.index = idx;
 
+            // Drag Events
             el.addEventListener('dragstart', handleSortableDragStart); 
             el.addEventListener('dragover', handleSortableDragOver); 
             el.addEventListener('drop', handleActivityDrop); 
@@ -915,66 +934,46 @@
 
             const dot = document.createElement('div'); dot.className = 'timeline-dot'; c.appendChild(dot);
 
+            // --- 分帳 HTML 生成 ---
             let splitsHtml = '';
             const cardSymbol = act.currency === 'TWD' ? 'NT$' : baseSymbol;
             
-            // --- 分帳 HTML Loop ---
-            
             act.splits.forEach((splitItem, sIdx) => { 
-                const beneficiary = splitItem.beneficiary; // 歸屬人 (Who consumed)
-                const payer = splitItem.payer; // 付款人 (Who paid)
+                const beneficiary = splitItem.beneficiary; 
+                const payer = splitItem.payer; 
                 const val = splitItem.amount;
                 const splitId = splitItem.id; 
                 
-                // 1. Beneficiary Select (with custom rendering)
-                const beneSelectHtml = renderTravelerSelect(
-                    idx, splitId, beneficiary, tripData.travelers, 'beneficiary'
-                );
-                
-                // 2. Payer Select (standard minimal look)
-                let payerOptionsHtml = tripData.travelers.map(t => 
-                    `<option value="${t}" ${t === payer ? 'selected' : ''}>${t}</option>`
-                ).join('');
+                const beneSelectHtml = renderTravelerSelect(idx, splitId, beneficiary, tripData.travelers, 'beneficiary');
+                let payerOptionsHtml = tripData.travelers.map(t => `<option value="${t}" ${t === payer ? 'selected' : ''}>${t}</option>`).join('');
 
-                // --- NEW ROW STRUCTURE (User's request) ---
                 splitsHtml += `<div class="flex items-center justify-between gap-1 py-1 group border-b border-gray-50 last:border-b-0">
-                  
-                  <div class="flex-1 min-w-0">
-                    ${beneSelectHtml}
-                  </div>
-                  
+                  <div class="flex-1 min-w-0">${beneSelectHtml}</div>
                   <div class="flex items-center gap-1 flex-shrink-0 w-1/3 min-w-[100px]">
                     <span class="text-gray-400 font-serif mr-1 text-sm">⇢</span>
-                    <select onchange="updateSplitPayer(${idx}, '${splitId}', this.value)" class="text-xs w-full border-b border-gray-300 bg-transparent text-gray-600 focus:border-[var(--theme-color)] py-0 h-6 outline-none">
-                        ${payerOptionsHtml}
-                    </select>
+                    <select onchange="updateSplitPayer(${idx}, '${splitId}', this.value)" class="text-xs w-full border-b border-gray-300 bg-transparent text-gray-600 focus:border-[var(--theme-color)] py-0 h-6 outline-none">${payerOptionsHtml}</select>
                   </div>
-                  
                   <div class="flex items-center gap-1 flex-shrink-0 ml-1">
                     <div class="flex items-baseline gap-1">
                       <span class="text-[10px] text-gray-400">${cardSymbol}</span>
                       <input type="number" value="${val}" onchange="updateSplitAmount(${idx}, '${splitId}', this.value)" class="w-14 text-base font-bold text-ink bg-transparent border-b border-gray-300 text-right focus:border-[var(--theme-color)] outline-none" placeholder="0">
                     </div>
-                    <button onclick="deleteSplit(${idx}, '${splitId}')" class="text-gray-300 hover:text-rose-500 w-5 h-5 flex items-center justify-center transition" title="刪除分帳項目">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M8.75 12.75a.75.75 0 01.75-.75h3.5a.75.75 0 010 1.5h-3.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M16 6a1 1 0 011 1v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a1 1 0 011-1h12zM5.555 7.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zM15 7.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zM8 3a1 1 0 011-1h2a1 1 0 011 1h4a1 1 0 011 1v1H3V4a1 1 0 011-1h4z" clip-rule="evenodd" /></svg>
-                    </button>
+                    <button onclick="deleteSplit(${idx}, '${splitId}')" class="text-gray-300 hover:text-rose-500 w-5 h-5 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M8.75 12.75a.75.75 0 01.75-.75h3.5a.75.75 0 010 1.5h-3.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M16 6a1 1 0 011 1v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a1 1 0 011-1h12zM5.555 7.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zM15 7.5a.75.75 0 00-1.5 0v.75a.75.75 0 001.5 0v-.75zM8 3a1 1 0 011-1h2a1 1 0 011 1h4a1 1 0 011 1v1H3V4a1 1 0 011-1h4z" clip-rule="evenodd" /></svg></button>
                   </div>
                 </div>`;
             });
-            // --- 結束分帳 HTML Loop ---
-
 
             const addressHtml = act.address ? `<div class="flex items-start gap-2 mb-2 mt-2 text-xs text-gray-400 font-sans group/addr"><span class="flex-shrink-0 mt-0.5">📮</span><span class="truncate max-w-[200px] select-text">${act.address}</span><button onclick="copyAddress('${act.address}')" class="opacity-50 hover:opacity-100 hover:text-[var(--theme-color)] transition" title="複製地址">📋</button></div>` : '';
             const descHtml = act.desc ? `<div class="flex items-start gap-2 mb-3 mt-2 text-xs font-bold text-gray-500 font-sans select-text"><span class="flex-shrink-0 mt-0.5">📝</span><p class="whitespace-pre-wrap leading-relaxed">${act.desc}</p></div>` : '';
-
             const dragHandleHtml = `<div class="drag-handle-btn cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-[var(--theme-color)] flex items-center justify-center transition" title="拖曳排序" draggable="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg></div>`;
 
+            // --- Edit Mode HTML (手機版面修正: Time 移前且不壓縮, Label 移後可壓縮) ---
             const editModeHtml = `
                 <div class="edit-mode hidden w-full p-4 bg-white">
                     <div class="flex gap-2 mb-3">
                         <input type="text" class="edit-icon w-10 text-center bg-gray-50 rounded border border-gray-200 py-1" value="${act.icon}">
-                        <input type="text" class="edit-label flex-1 text-base font-sans text-ink border border-gray-200 rounded px-2 py-1" value="${act.label||''}" placeholder="活動標籤">
-                        <input type="time" class="edit-time font-sans text-sm text-gray-600 border border-gray-200 rounded px-2 py-1" value="${act.time}">
+                        <input type="time" class="edit-time shrink-0 font-sans text-sm text-gray-600 border border-gray-200 rounded px-2 py-1" value="${act.time}">
+                        <input type="text" class="edit-label flex-1 min-w-0 text-base font-sans text-ink border border-gray-200 rounded px-2 py-1" value="${act.label||''}" placeholder="活動標籤">
                     </div>
                     <input type="text" class="edit-location w-full text-lg font-serif font-bold text-ink mb-2 border-b border-gray-300 pb-1" value="${act.location}" placeholder="地點名稱">
                     <div class="flex gap-2 mb-2 bg-gray-50 p-2 rounded">
@@ -987,7 +986,6 @@
                 </div>
             `;
 
-            // --- 修改重點：在 splitsHtml 上方加入了 標題欄位 ---
             el.innerHTML = `
                 <div class="view-mode w-full flex flex-col md:flex-row relative">
                     <div class="absolute top-2 right-2 flex items-center gap-1 z-10 card-actions bg-white/80 backdrop-blur rounded-full pl-1">
@@ -1019,8 +1017,6 @@
                                     <option value="行" ${act.costType=='行'?'selected':''}>行</option><option value="育" ${act.costType=='育'?'selected':''}>育</option><option value="樂" ${act.costType=='樂'?'selected':''}>樂</option>
                                     <option value="購" ${act.costType=='購'?'selected':''}>購</option><option value="雜" ${act.costType=='雜'?'selected':''}>雜</option>
                                 </select>
-                                <div class="ml-auto flex items-center gap-2">
-                                    </div>
                             </div>
                             <div class="mb-2"><input type="text" value="${act.expenseDetail || ''}" onchange="updateAct(${idx},'expenseDetail',this.value)" class="w-full text-xs border-b border-gray-200 py-1 bg-transparent focus:border-[var(--theme-color)]" placeholder="消費細項"></div>
                             
@@ -1053,7 +1049,6 @@
         });
         updateBudgetSummary();
     }
-
     
     // --- 新增/刪除/更新分帳管理函式 ---
     
@@ -1093,10 +1088,17 @@
             const displayAvatar = document.querySelector(`#display-${id} .avatar-circle`);
             const displayName = document.querySelector(`#display-${id} .name`);
             if (displayAvatar && displayName) {
-                const colorIdx = tripData.travelers.indexOf(newBeneficiary);
-                const color = colorIdx >= 0 ? generateThemePalette(tripData.themeColor, colorIdx, tripData.travelers.length) : '#ccc';
+                let color, initial;
+                if (newBeneficiary === '均攤') {
+                    color = '#64748b';
+                    initial = '均';
+                } else {
+                    const colorIdx = tripData.travelers.indexOf(newBeneficiary);
+                    color = colorIdx >= 0 ? generateThemePalette(tripData.themeColor, colorIdx, tripData.travelers.length) : '#ccc';
+                    initial = newBeneficiary.substring(0, 1);
+                }
                 displayAvatar.style.backgroundColor = color;
-                displayAvatar.textContent = newBeneficiary.substring(0, 1);
+                displayAvatar.textContent = initial;
                 displayName.textContent = newBeneficiary;
             }
 
@@ -1118,8 +1120,28 @@
         }
     }
 
+    // --- 修正後的刪除活動功能 (Fixed Delete Activity) ---
+    function deleteAct(idx) { 
+        if(window.confirm('確定要刪除這個活動節點嗎？')) { // 使用 window.confirm 維持既有提示樣式
+            const dayKey = `Day ${currentDay}`;
+            if(tripData && tripData.days && tripData.days[dayKey] && tripData.days[dayKey].activities) {
+                const deleted = tripData.days[dayKey].activities.splice(idx,1); 
+                
+                saveCurrentTrip();
+                renderTimeline(); 
+                updateBudgetSummary(); // 確保刪除後費用總結立即更新
+
+                if (deleted.length > 0) {
+                     showToast(`已刪除活動: ${deleted[0].location || '未命名活動'}`);
+                }
+            } else {
+                showToast("錯誤：無法找到該活動清單。");
+            }
+        } 
+    }
+
     function deleteSplit(actIndex, splitId) {
-        if(confirm(`確定要將此分帳項目移除嗎？`)) {
+        if(window.confirm(`確定要將此分帳項目移除嗎？`)) {
             const act = tripData.days[`Day ${currentDay}`].activities[actIndex];
             
             // 移除該 ID 的分帳項目
@@ -1147,7 +1169,7 @@
         const act = tripData.days[`Day ${currentDay}`].activities[actIndex];
         
         if (tripData.travelers.length === 0) {
-            alert('請先在旅程設定中新增旅伴名單。');
+            showToast('請先在旅程設定中新增旅伴名單。'); // 使用 showToast
             return;
         }
 
@@ -1199,9 +1221,15 @@
         // Update currency in all splits
         tripData.days[`Day ${currentDay}`].activities[idx].splits.forEach(s => s.currency = newCurrency);
 
+        // --- Sort activities by time ---
+        tripData.days[`Day ${currentDay}`].activities.sort((a, b) => {
+            return a.time.localeCompare(b.time);
+        });
+        // ------------------------------------
 
         saveCurrentTrip();
         renderTimeline();
+        showToast("活動已儲存並排序完成！");
     }
     
     function getCategoryIcon(t) { const m={'食':'🍚','衣':'👕','住':'🏨','行':'🚆','育':'🎫','樂':'🎡','購':'🛍️','雜':'🔧'}; return m[t]||'💰'; }
@@ -1217,6 +1245,7 @@
         }); 
         saveCurrentTrip(); // 儲存新增的活動
         renderTimeline(); // 重新渲染時間軸
+        showToast("已新增活動節點");
         
         // 如果在非編輯模式下新增，需要手動滾動到新活動的位置
         // if (!isEditMode) {
@@ -1227,15 +1256,7 @@
         //     }, 100);
         // }
     }
-    function deleteAct(idx) { 
-        if(confirm('刪除？')) {
-            if(tripData && tripData.days && tripData.days[`Day ${currentDay}`]) {
-                tripData.days[`Day ${currentDay}`].activities.splice(idx,1); 
-                renderTimeline(); 
-                saveCurrentTrip();
-            }
-        } 
-    }
+    
     // 修正日期顯示問題：確保日期被正確格式化和顯示（年/月/日）
     function updateDayHeader() { 
         const k=`Day ${currentDay}`, d=tripData.days[k]; 
@@ -1269,16 +1290,16 @@
     }
     function switchListSubTab(tab) { currentListTab = tab; renderListsPage(); }
     function renderChecklist() { const container=document.getElementById('checklist-items'); container.innerHTML=''; tripData.checklist.forEach((item, idx)=>{ const el=document.createElement('div'); el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100"; el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleCheckItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateCheckItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteCheckItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; container.appendChild(el); }); }
-    function applyChecklist(d) { if(confirm(`匯入 ${d} 天清單？`)){ CHECKLIST_PRESETS[d].forEach(p=>{if(!tripData.checklist.some(i=>i.text===p))tripData.checklist.push({text:p,checked:false})}); renderChecklist(); saveCurrentTrip(); } }
-    function addChecklistItem() { const inp=document.getElementById('new-item-input'); if(inp.value.trim()){ tripData.checklist.push({text:inp.value.trim(),checked:false}); inp.value=''; renderChecklist(); saveCurrentTrip(); } }
+    function applyChecklist(d) { if(window.confirm(`匯入 ${d} 天清單？`)){ CHECKLIST_PRESETS[d].forEach(p=>{if(!tripData.checklist.some(i=>i.text===p))tripData.checklist.push({text:p,checked:false})}); renderChecklist(); saveCurrentTrip(); showToast("已套用預設清單"); } }
+    function addChecklistItem() { const inp=document.getElementById('new-item-input'); if(inp.value.trim()){ tripData.checklist.push({text:inp.value.trim(),checked:false}); inp.value=''; renderChecklist(); saveCurrentTrip(); showToast("已新增行李項目"); } }
     function toggleCheckItem(i){tripData.checklist[i].checked=!tripData.checklist[i].checked; renderChecklist(); saveCurrentTrip();}
     function updateCheckItem(i,v){tripData.checklist[i].text=v; saveCurrentTrip();}
-    function deleteCheckItem(i){tripData.checklist.splice(i,1); renderChecklist(); saveCurrentTrip();}
+    function deleteCheckItem(i){tripData.checklist.splice(i,1); renderChecklist(); saveCurrentTrip(); showToast("已刪除行李項目");}
     function renderShopping() { const container=document.getElementById('shopping-items'); container.innerHTML=''; tripData.shoppingList.forEach((item, idx)=>{ const el=document.createElement('div'); el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100"; el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleShopItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateShopItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteShopItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; container.appendChild(el); }); }
-    function addShoppingItem() { const inp=document.getElementById('new-shop-input'); if(inp.value.trim()){ tripData.shoppingList.push({text:inp.value.trim(),checked:false}); inp.value=''; renderShopping(); saveCurrentTrip(); } }
+    function addShoppingItem() { const inp=document.getElementById('new-shop-input'); if(inp.value.trim()){ tripData.shoppingList.push({text:inp.value.trim(),checked:false}); inp.value=''; renderShopping(); saveCurrentTrip(); showToast("已新增購物項目"); } }
     function toggleShopItem(i){tripData.shoppingList[i].checked=!tripData.shoppingList[i].checked; renderShopping(); saveCurrentTrip();}
     function updateShopItem(i,v){tripData.shoppingList[i].text=v; saveCurrentTrip();}
-    function deleteShopItem(i){tripData.shoppingList.splice(i,1); renderShopping(); saveCurrentTrip();}
+    function deleteShopItem(i){tripData.shoppingList.splice(i,1); renderShopping(); saveCurrentTrip(); showToast("已刪除購物項目");}
 
     function initExpenseForm() {
         const payerSel = document.getElementById('exp-payer'); 
@@ -1286,10 +1307,17 @@
         payerSel.innerHTML = '';
         beneSel.innerHTML = '';
         
+        // Payer list (Normal travelers)
         tripData.travelers.forEach(t => { 
             const optP = document.createElement('option'); optP.value = t; optP.textContent = t; payerSel.appendChild(optP);
+        });
+        
+        // Beneficiary list (Travelers + "均攤")
+        tripData.travelers.forEach(t => { 
             const optB = document.createElement('option'); optB.value = t; optB.textContent = t; beneSel.appendChild(optB);
         });
+        // Append "均攤" option
+        const optAvg = document.createElement('option'); optAvg.value = '均攤'; optAvg.textContent = '均攤 (所有人平分)'; beneSel.appendChild(optAvg);
         
         document.getElementById('exp-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('exp-name').value = '';
@@ -1326,13 +1354,14 @@
         const beneficiary = document.getElementById('exp-beneficiary').value;
         const amount = parseInt(document.getElementById('exp-amount').value) || 0;
         const currency = document.getElementById('exp-currency').value;
-        if(!date || !name || amount <= 0) { alert("請填寫完整日期、名稱與金額"); return; }
+        if(!date || !name || amount <= 0) { showToast("請填寫完整日期、名稱與金額"); return; }
         // 儲存 beneficiary 資訊，若無則預設為 payer 
         const expenseObj = { date, category: cat, name, detail, payer, beneficiary: beneficiary || payer, amount, currency };
         tripData.expenses.push(expenseObj);
         saveCurrentTrip();
         renderExpensesList();
         initExpenseForm();
+        showToast(`已新增費用: ${name}`);
     }
     function toggleEditExpense(idx) {
         const container = document.getElementById('expenses-list-container');
@@ -1362,6 +1391,10 @@
                 const optP = document.createElement('option'); optP.value = t; optP.textContent = t; if(t === exp.payer) optP.selected = true; payerSel.appendChild(optP);
                 const optB = document.createElement('option'); optB.value = t; optB.textContent = t; if(t === (exp.beneficiary || exp.payer)) optB.selected = true; beneSel.appendChild(optB);
             }); 
+            // Append "均攤" option to edit dropdown
+            const optAvg = document.createElement('option'); optAvg.value = '均攤'; optAvg.textContent = '均攤 (所有人平分)'; 
+            if(exp.beneficiary === '均攤') optAvg.selected = true;
+            beneSel.appendChild(optAvg);
             
             const baseCurr = tripData.baseCurrency || 'JPY';
             const baseSymbol = CURRENCY_SYMBOLS[baseCurr] || baseCurr;
@@ -1383,12 +1416,22 @@
         const beneficiary = target.querySelector('.edit-beneficiary').value;
         const amount = parseInt(target.querySelector('.edit-amount').value) || 0;
         const currency = target.querySelector('.edit-currency-select').value;
-        if(!date || !name || amount <= 0) { alert("請填寫完整資料"); return; }
+        if(!date || !name || amount <= 0) { showToast("請填寫完整資料"); return; }
         tripData.expenses[idx] = { date, category: cat, name, detail, payer, beneficiary, amount, currency };
         saveCurrentTrip();
         renderExpensesList();
+        showToast(`費用已儲存: ${name}`);
     }
-    function deleteExpenseItem(idx) { if(confirm("確定刪除此筆費用？")) { tripData.expenses.splice(idx, 1); saveCurrentTrip(); renderExpensesList(); } }
+    function deleteExpenseItem(idx) { 
+        if(window.confirm("確定刪除此筆費用？")) { 
+            const deleted = tripData.expenses.splice(idx, 1); 
+            saveCurrentTrip(); 
+            renderExpensesList(); 
+            if (deleted.length > 0) {
+                showToast(`已刪除費用: ${deleted[0].name || '未命名費用'}`);
+            }
+        } 
+    }
     
     // Render Expense List with Drag Handles
     function renderExpensesList() {
@@ -1407,8 +1450,13 @@
             
             // 處理受益人顯示文字
             const bene = exp.beneficiary || exp.payer;
-            const isForSelf = bene === exp.payer;
-            const relationText = isForSelf ? `${exp.payer}` : `${exp.payer} ⮕ ${bene}`;
+            let relationText = '';
+            if (bene === '均攤') {
+                relationText = `${exp.payer} ⮕ 全員均攤`;
+            } else {
+                const isForSelf = bene === exp.payer;
+                relationText = isForSelf ? `${exp.payer}` : `${exp.payer} ⮕ ${bene}`;
+            }
 
             const icon = getCategoryIcon(exp.category);
             const el = document.createElement('div');
@@ -1643,9 +1691,16 @@
     function updateBudgetSummary() {
         let total = 0;
         window.payerBreakdown = {};
-        window.consumptionBreakdown = {}; // New: Breakdown based on who consumed (beneficiary)
+        window.consumptionBreakdown = {}; 
         window.personCategoryBreakdown = {}; 
-        window.categoryBreakdownTotal = {};
+        
+        // 分別建立兩份清單：一份給付款模式，一份給消費模式
+        window.categoryListPayment = {};
+        window.categoryListConsumption = {};
+        ['食','衣','住','行','育','樂','購','雜'].forEach(cat => {
+            window.categoryListPayment[cat] = {total: 0, items: []};
+            window.categoryListConsumption[cat] = {total: 0, items: []};
+        });
         
         // For Settlement Calculation
         let netBalances = {}; // { Person: +Credit/-Debt }
@@ -1657,10 +1712,9 @@
             ['食','衣','住','行','育','樂','購','雜'].forEach(cat => window.personCategoryBreakdown[t][cat] = 0); 
         });
 
-        ['食','衣','住','行','育','樂','購','雜'].forEach(cat => window.categoryBreakdownTotal[cat] = {total:0, items:[]});
-        
         const baseCurr = tripData.baseCurrency || 'JPY';
         const rate = tripData.exchangeRate;
+        const totalTravelers = tripData.travelers.length; // Count for splitting
 
         const normalize = (amount, sourceCurrency) => {
             if (sourceCurrency === baseCurr) return amount;
@@ -1684,31 +1738,64 @@
                         const normalizedVal = normalize(val, sourceCurr);
                         total += normalizedVal;
                         
-                        // Settlement Logic: Beneficiary owes, Payer paid
-                        netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
+                        // 1. 付款模式清單 (Payment List Logic)
+                        // 無論 beneficiaries 是誰，只要是這個 payer 付的錢，就加總進去。不拆分。
+                        window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
                         netBalances[payer] = (netBalances[payer] || 0) + normalizedVal;
                         
-                        // Chart Logic
-                        // Payment Mode (Who Paid)
-                        window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
-                        // Consumption Mode (Who Consumed/Is Beneficiary)
-                        window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
-                        
-                        // Category Breakdown (based on consumption mode)
-                        window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
-                        
-                        // List Item
-                        if(!window.categoryBreakdownTotal[type]) window.categoryBreakdownTotal[type] = {total:0, items:[]};
-                        window.categoryBreakdownTotal[type].total += normalizedVal;
-                        window.categoryBreakdownTotal[type].items.push({ 
+                        window.categoryListPayment[type].total += normalizedVal;
+                        window.categoryListPayment[type].items.push({ 
                             name: a.location, 
                             detail: a.expenseDetail || '', 
                             amount: normalizedVal, 
                             payer: payer, 
                             beneficiary: beneficiary, 
                             date: d.date,
-                            isItinerary: true
+                            isItinerary: true,
+                            viewMode: 'payment'
                         });
+
+                        // 2. 消費模式清單 (Consumption List Logic) - 處理均攤拆分
+                        if (beneficiary === '均攤') {
+                            const splitAmount = normalizedVal / totalTravelers;
+                            tripData.travelers.forEach(t => {
+                                // Consumption Stats
+                                window.consumptionBreakdown[t] = (window.consumptionBreakdown[t]||0) + splitAmount;
+                                window.personCategoryBreakdown[t][type] = (window.personCategoryBreakdown[t][type] || 0) + splitAmount;
+                                netBalances[t] = (netBalances[t] || 0) - splitAmount;
+
+                                // Add INDIVIDUAL split item to Consumption List
+                                window.categoryListConsumption[type].total += splitAmount;
+                                window.categoryListConsumption[type].items.push({ 
+                                    name: a.location, 
+                                    detail: a.expenseDetail || '', 
+                                    amount: splitAmount, 
+                                    payer: payer, 
+                                    beneficiary: t, 
+                                    date: d.date,
+                                    isItinerary: true,
+                                    isShared: true, // Flag for display text
+                                    viewMode: 'consumption'
+                                });
+                            });
+                        } else {
+                            // Standard 1-to-1
+                            window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
+                            window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
+                            netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
+
+                            window.categoryListConsumption[type].total += normalizedVal;
+                            window.categoryListConsumption[type].items.push({ 
+                                name: a.location, 
+                                detail: a.expenseDetail || '', 
+                                amount: normalizedVal, 
+                                payer: payer, 
+                                beneficiary: beneficiary, 
+                                date: d.date,
+                                isItinerary: true,
+                                viewMode: 'consumption'
+                            });
+                        }
                     }
                 });
             }
@@ -1723,34 +1810,64 @@
             if (val > 0 && payer) {
                 const sourceCurr = exp.currency || baseCurr;
                 const normalizedVal = normalize(val, sourceCurr);
+                const type = exp.category;
                 
                 total += normalizedVal; 
 
-                // Settlement Logic
-                netBalances[payer] = (netBalances[payer] || 0) + normalizedVal;
-                netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
-
-                // Chart Logic
-                // Payment Mode (Who Paid)
+                // 1. 付款模式清單 (Payment List Logic)
                 window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
-                // Consumption Mode (Who Consumed/Is Beneficiary)
-                window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
-                
-                // Category Breakdown (based on consumption mode)
-                const type = exp.category;
-                window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
-                
-                if(!window.categoryBreakdownTotal[type]) window.categoryBreakdownTotal[type] = {total:0, items:[]};
-                window.categoryBreakdownTotal[type].total += normalizedVal;
-                window.categoryBreakdownTotal[type].items.push({ 
+                netBalances[payer] = (netBalances[payer] || 0) + normalizedVal;
+
+                window.categoryListPayment[type].total += normalizedVal;
+                window.categoryListPayment[type].items.push({ 
                     name: exp.name, 
                     detail: exp.detail || '', 
                     amount: normalizedVal, 
                     payer: payer, 
                     beneficiary: beneficiary,
                     date: exp.date,
-                    isItinerary: false
+                    isItinerary: false,
+                    viewMode: 'payment'
                 });
+
+                // 2. 消費模式清單 (Consumption List Logic)
+                if (beneficiary === '均攤') {
+                    const splitAmount = normalizedVal / totalTravelers;
+                    tripData.travelers.forEach(t => {
+                        window.consumptionBreakdown[t] = (window.consumptionBreakdown[t]||0) + splitAmount;
+                        window.personCategoryBreakdown[t][type] = (window.personCategoryBreakdown[t][type] || 0) + splitAmount;
+                        netBalances[t] = (netBalances[t] || 0) - splitAmount;
+
+                        window.categoryListConsumption[type].total += splitAmount;
+                        window.categoryListConsumption[type].items.push({ 
+                            name: exp.name, 
+                            detail: exp.detail || '', 
+                            amount: splitAmount, 
+                            payer: payer, 
+                            beneficiary: t,
+                            date: exp.date,
+                            isItinerary: false,
+                            isShared: true,
+                            viewMode: 'consumption'
+                        });
+                    });
+                } else {
+                    window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
+                    window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
+                    netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
+
+                    window.categoryListConsumption[type].total += normalizedVal;
+                    window.categoryListConsumption[type].items.push({ 
+                        name: exp.name, 
+                        detail: exp.detail || '', 
+                        amount: normalizedVal, 
+                        payer: payer, 
+                        beneficiary: beneficiary,
+                        date: exp.date,
+                        isItinerary: false,
+                        viewMode: 'consumption'
+                    });
+                }
             }
         });
         
@@ -1891,13 +2008,20 @@
         
         const detailList = document.getElementById('category-detail-list');
         detailList.innerHTML = '';
+        
+        // 選擇資料來源：根據模式選擇 Payment List 或 Consumption List
+        const sourceDataList = isPaymentMode ? window.categoryListPayment : window.categoryListConsumption;
+
         categories.forEach(cat => {
             if (activeCategoryFilter !== null && activeCategoryFilter !== cat) return;
-            const data = window.categoryBreakdownTotal[cat];
+            const data = sourceDataList[cat]; // Retrieve correct data list
             if(data && data.total > 0) {
                 const color = CAT_COLORS[cat];
                 const icon = getCategoryIcon(cat);
+                
+                // Sort by amount descending
                 data.items.sort((a,b) => b.amount - a.amount);
+                
                 const sectionTwd = Math.round(data.total * rate);
                 let sectionTotalDisplay = `${baseSymbol}${data.total.toLocaleString()} <span class="text-xs text-gray-400 ml-1 font-sans">≈ NT$ ${sectionTwd.toLocaleString()}</span>`;
                 let html = `<div class="border border-gray-100 rounded-xl overflow-hidden category-section" data-category="${cat}"><div class="bg-gray-50 p-3 flex justify-between items-center"><div class="flex items-center gap-2 font-bold text-ink"><span class="w-3 h-3 rounded-full" style="background:${color}"></span>${icon} ${cat}</div><div class="font-bold text-[var(--theme-color)]">${sectionTotalDisplay}</div></div><div class="divide-y divide-gray-50 bg-white">`;
@@ -1905,10 +2029,28 @@
                     const itemTwd = Math.round(item.amount * rate);
                     let itemAmtDisplay = `${baseSymbol}${item.amount.toLocaleString()}`;
                     
-                    // Detail Text Logic (Based on consumption/beneficiary)
+                    // Detail Text Logic
                     let detailMeta = '';
-                    if(item.payer !== item.beneficiary) detailMeta = `${item.date} • ${item.beneficiary} 消費 (由 ${item.payer} 付)`;
-                    else detailMeta = `${item.date} • ${item.beneficiary} 消費`;
+                    
+                    if (isPaymentMode) {
+                        // Payment Mode Text
+                        if (item.beneficiary === '均攤') {
+                            detailMeta = `${item.date} • ${item.payer} 付款 ⮕ 全員均攤`;
+                        } else if(item.payer !== item.beneficiary) {
+                            detailMeta = `${item.date} • ${item.payer} 付款 ⮕ ${item.beneficiary}`;
+                        } else {
+                            detailMeta = `${item.date} • ${item.payer} 付款 (自用)`;
+                        }
+                    } else {
+                        // Consumption Mode Text
+                        if (item.isShared) {
+                             detailMeta = `${item.date} • ${item.beneficiary} 分攤 (由 ${item.payer} 代墊)`;
+                        } else if(item.payer !== item.beneficiary) {
+                            detailMeta = `${item.date} • ${item.beneficiary} 消費 (由 ${item.payer} 付)`;
+                        } else {
+                            detailMeta = `${item.date} • ${item.beneficiary} 消費`;
+                        }
+                    }
 
                     html += `<div class="p-3 flex justify-between text-sm hover:bg-gray-50 transition"><div><div class="text-gray-800 font-medium">${item.name}</div>${item.detail ? `<div class="text-xs text-[var(--theme-color)] mt-1 block">${item.detail}</div>` : ''}<div class="text-xs text-gray-400 mt-1">${detailMeta}</div></div><div class="text-right"><div class="text-gray-600 font-serif font-bold">${itemAmtDisplay}</div><div class="text-[10px] text-gray-400">≈ NT$ ${itemTwd.toLocaleString()}</div></div></div>`;
                 });
@@ -1921,14 +2063,12 @@
     function copyAddress(text) {
         if(!text) return;
         navigator.clipboard.writeText(text).then(() => {
-            const b = document.getElementById('message-banner');
-            b.textContent = `已複製地址：${text}`;
-            b.classList.remove('-translate-y-full'); 
-            setTimeout(() => { b.classList.add('-translate-y-full'); }, 2500);
-        }).catch(err => { console.error('Copy failed', err); alert('複製失敗，請手動複製'); });
+            showToast(`已複製地址：${text}`); // 使用 showToast
+        }).catch(err => { console.error('Copy failed', err); window.alert('複製失敗，請手動複製'); });
     }
 
     window.onload = init;
   </script>
 </body>
 </html>
+
