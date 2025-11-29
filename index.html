@@ -18,82 +18,207 @@
         extend: {
           fontFamily: { serif: ['"Zen Old Mincho"', 'serif'], sans: ['"Noto Sans TC"', 'sans-serif'] },
           colors: { paper: '#F9F7F2', gold: 'var(--theme-color)', ink: '#333333', sub: '#8C8C8C' },
-          animation: { 'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards', 'fade-in': 'fadeIn 0.3s ease-out forwards' },
-          keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }, fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } } }
+          // 移除舊的 animation keyframes，我們將使用新的 CSS 類別和自定義屬性
+          animation: { 
+            'fade-in': 'fadeIn 0.3s ease-out forwards',
+            'bounce-in': 'bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both' // 新增彈跳進場動畫
+          },
+          keyframes: { 
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            bounceIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } } 
+          }
         }
       }
     }
   </script>
 
   <style>
-    :root { --theme-color: #C6A664; }
+    :root { 
+      --theme-color: #C6A664; 
+      --spring-curve: cubic-bezier(0.34, 1.56, 0.64, 1); /* 核心物理彈簧曲線 */
+      --smooth-curve: cubic-bezier(0.16, 1, 0.3, 1);    /* 絲滑緩入曲線 */
+      --travel-bg-color: #F9F7F2; /* 預設淺色 */
+    }
     html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
     body { background-color: #F9F7F2; color: #333; font-family: 'Noto Sans TC', sans-serif; overflow-x: hidden; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .smooth-scroll-container { overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory; }
     .smooth-scroll-item { scroll-snap-align: start; }
-    input, textarea, select { background: transparent; border: none; border-bottom: 1px solid rgba(0,0,0,0.1); border-radius: 0; padding: 4px 0; transition: border-color 0.3s; font-family: 'Zen Old Mincho', serif; }
+    
+    /* 核心: 輸入框和下拉選單的絲滑轉場 */
+    input, textarea, select { 
+      background: transparent; border: none; border-bottom: 1px solid rgba(0,0,0,0.1); border-radius: 0; padding: 4px 0; 
+      transition: border-color 0.4s var(--smooth-curve); /* 提升轉場速度和曲線 */
+      font-family: 'Zen Old Mincho', serif; 
+    }
     input:focus, textarea:focus, select:focus { outline: none; border-bottom-color: var(--theme-color); }
     
-    .float-btn { width: 40px; height: 40px; border-radius: 50%; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s; z-index: 50; cursor: pointer; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .float-btn:hover { background-color: rgba(255,255,255,0.3); transform: translateY(-2px); }
+    /* 核心: 浮動按鈕的物理彈簧效果 */
+    .float-btn { 
+      width: 40px; height: 40px; border-radius: 50%; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(8px); 
+      border: 1px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; 
+      transition: all 0.3s var(--spring-curve); /* 使用彈簧曲線 */
+      z-index: 50; cursor: pointer; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+    }
+    .float-btn:hover { background-color: rgba(255,255,255,0.3); transform: translateY(-2px) scale(1.05); } /* 增加縮放感 */
+    .float-btn:active { transform: translateY(0px) scale(0.95); transition: all 0.1s linear; } /* 點擊時快速收縮 */
     .float-btn-danger:hover { background-color: #ef4444; border-color: #ef4444; }
-    .float-btn.active { background-color: var(--theme-color); border-color: var(--theme-color); color: white; box-shadow: 0 0 15px var(--theme-color); }
+    .float-btn.active { background-color: var(--theme-color); border-color: var(--theme-color); color: white; box-shadow: 0 0 15px var(--theme-color); transform: scale(1.05); }
 
-    .capsule-btn { padding: 6px 16px; background-color: white; border: 1px solid #E5E7EB; border-radius: 9999px; font-size: 12px; color: #6B7280; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px; }
-    .capsule-btn:hover { color: var(--theme-color); border-color: var(--theme-color); transform: translateY(-1px); }
+    /* 核心: 膠囊按鈕的物理彈簧效果 */
+    .capsule-btn { 
+      padding: 6px 16px; background-color: white; border: 1px solid #E5E7EB; border-radius: 9999px; font-size: 12px; 
+      color: #6B7280; 
+      transition: all 0.3s var(--spring-curve); /* 使用彈簧曲線 */
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px; 
+    }
+    .capsule-btn:hover { color: var(--theme-color); border-color: var(--theme-color); transform: translateY(-2px) scale(1.05); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .capsule-btn:active { transform: translateY(0px) scale(0.98); transition: all 0.1s linear; }
 
-    .add-node-btn { width: 100%; padding: 16px; background-color: rgba(255,255,255,0.6); border: 2px dashed #CBD5E1; border-radius: 16px; color: #94A3B8; font-family: 'Zen Old Mincho', serif; font-size: 14px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    /* 核心: 主要行動按鈕的物理彈簧效果 */
+    .btn-primary { 
+      background-color: var(--theme-color); color: white; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 14px; 
+      box-shadow: 0 4px 12px rgba(198, 166, 100, 0.3); 
+      transition: all 0.3s var(--spring-curve); /* 使用彈簧曲線 */
+      display: flex; align-items: center; gap: 8px; 
+    }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 16px rgba(198, 166, 100, 0.5); }
+    .btn-primary:active { transform: translateY(0px) scale(0.98); transition: all 0.1s linear; }
+
+    /* 新增節點按鈕的絲滑效果 */
+    .add-node-btn { 
+      width: 100%; padding: 16px; background-color: rgba(255,255,255,0.6); border: 2px dashed #CBD5E1; border-radius: 16px; 
+      color: #94A3B8; font-family: 'Zen Old Mincho', serif; font-size: 14px; 
+      transition: all 0.3s var(--smooth-curve); 
+      display: flex; align-items: center; justify-content: center; gap: 8px; 
+    }
     .add-node-btn:hover { background-color: white; border-color: var(--theme-color); color: var(--theme-color); transform: translateY(-1px); }
 
-    .btn-primary { background-color: var(--theme-color); color: white; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(198, 166, 100, 0.3); transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
-    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+    /* 核心: 日期標籤的平滑轉場 */
+    .day-tab-active { 
+      background-color: var(--theme-color); color: white; 
+      box-shadow: 0 4px 12px rgba(198, 166, 100, 0.4); 
+      transform: scale(1.05); 
+      border: 2px solid white; 
+      border-radius: 16px; 
+      transition: all 0.4s var(--smooth-curve); /* 確保切換時平滑 */
+    }
+    .day-tab-inactive { 
+      background-color: white; color: #ccc; border: 1px solid #f3f4f6; border-radius: 16px;
+      transition: all 0.4s var(--smooth-curve);
+    }
+    .day-tab-inactive:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
+    /* 核心: 導航列的絲滑轉場 */
+    .sticky-header {
+        transition: all 0.4s var(--smooth-curve);
+    }
+
+    /* 核心: 時間軸卡片的滾動漸入動畫 (預設狀態) */
+    .timeline-card {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s var(--smooth-curve), transform 0.6s var(--smooth-curve), background-color 0.3s; /* 加入背景色轉場 */
+        /* 自定義延遲將由 JS 注入 */
+    }
+    /* 激活狀態 */
+    .timeline-card.in-view {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* 交通小卡樣式 */
+    .timeline-travel-card {
+        /* 使小卡片位於時間軸中心線 */
+        margin-left: 20px; 
+        position: relative;
+    }
+    .timeline-travel-card .absolute {
+        /* 確保絕對定位元素不會被 timeline-card 的 transform 影響 */
+        transform: none !important; 
+    }
+    
+    /* 核心: 其他卡片和列表項目的絲滑轉場 */
+    .drag-item {
+        transition: all 0.3s var(--smooth-curve); /* 讓拖曳時的狀態切換更平滑 */
+    }
+    .group:hover .drag-item {
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .group:hover .card-actions { 
+        opacity: 1; 
+        transition: opacity 0.3s var(--smooth-curve);
+    }
+    /* ... 保留其他不變的 CSS ... */
+
 
     .custom-checkbox { appearance: none; width: 20px; height: 20px; border: 2px solid var(--theme-color); border-radius: 6px; cursor: pointer; display: grid; place-content: center; flex-shrink: 0; }
     .custom-checkbox::before { content: ""; width: 10px; height: 10px; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em var(--theme-color); transform-origin: center; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
     .custom-checkbox:checked::before { transform: scale(1); }
     
-    .sub-tab-active { background-color: white; color: var(--theme-color); box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-weight: bold; }
-    .sub-tab-inactive { color: #9CA3AF; }
+    .sub-tab-active { background-color: white; color: var(--theme-color); box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-weight: bold; transition: all 0.3s var(--smooth-curve); }
+    .sub-tab-inactive { color: #9CA3AF; transition: all 0.3s var(--smooth-curve); }
     .sub-tab-inactive:hover { color: #4B5563; }
 
     /* Expense Panel - Original Drawer Style */
-    .expense-panel-responsive { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; flex-shrink: 0; background-color: rgba(249, 250, 251, 0.5); width: 100%; max-height: 0; border-top: 0px solid #e5e5e5; opacity: 0; }
+    .expense-panel-responsive { transition: all 0.5s var(--smooth-curve); overflow: hidden; flex-shrink: 0; background-color: rgba(249, 250, 251, 0.5); width: 100%; max-height: 0; border-top: 0px solid #e5e5e5; opacity: 0; }
     .expense-panel-responsive.open { max-height: 2000px; border-top-width: 1px; opacity: 1; padding-bottom: 16px; }
     @media (min-width: 768px) {
         .expense-panel-responsive { width: 0; max-height: none !important; height: auto; border-top: none; border-left: 0px solid #e5e5e5; border-left-style: dashed; opacity: 1; padding-bottom: 0; }
         .expense-panel-responsive.open { width: 340px; border-left-width: 2px; }
     }
     
-    .day-tab-active { background-color: var(--theme-color); color: white; box-shadow: 0 4px 12px rgba(198, 166, 100, 0.4); transform: scale(1.05); border: 2px solid white; border-radius: 16px; }
-    .day-tab-inactive { background-color: white; color: #ccc; border: 1px solid #f3f4f6; border-radius: 16px; }
     .avatar-circle { border-radius: 50%; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; }
     
-    #edit-modal-overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; }
-    .edit-modal-content { background: white; width: 100%; max-width: 340px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); animation: modalPop 0.3s; }
-    @keyframes modalPop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #edit-modal-overlay { 
+      position: fixed; inset: 0; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; display: flex; justify-content: center; align-items: center; padding: 20px; 
+      opacity: 0; visibility: hidden; transition: opacity 0.3s ease; 
+    }
+    #edit-settings-modal.show #edit-modal-overlay { opacity: 1; visibility: visible; }
+
+    .edit-modal-content { 
+      background: white; width: 100%; max-width: 340px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
+      transform: scale(0.9); transition: transform 0.3s var(--spring-curve); 
+    }
+    #edit-settings-modal.show .edit-modal-content { transform: scale(1); }
+
     .edit-modal-input { color: #333; border-bottom: 1px solid #ddd; text-align: left; width: 100%; padding: 8px 0; }
     
-    .nav-floating-btn { position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: 72px; height: 72px; border-radius: 24px; background-color: var(--theme-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 60; border: 4px solid #F9F7F2; transition: transform 0.2s; }
-    .nav-floating-btn:active { transform: translateX(-50%) scale(0.95); }
+    .nav-floating-btn { 
+      position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: 72px; height: 72px; border-radius: 24px; 
+      background-color: var(--theme-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; z-index: 60; border: 4px solid #F9F7F2; 
+      transition: transform 0.3s var(--spring-curve), background-color 0.3s; 
+    }
+    .nav-floating-btn:active { transform: translateX(-50%) scale(0.9); transition: transform 0.1s linear; }
+    .nav-floating-btn.active { box-shadow: 0 10px 30px rgba(198, 166, 100, 0.6); } /* 活躍時增加更亮的陰影 */
     
     .drag-item.dragging { opacity: 0.5; border: 2px dashed var(--theme-color); background: #fffbeb; }
     .drag-handle { cursor: grab; touch-action: none; }
     .drag-handle:active { cursor: grabbing; }
     
-    .legend-pill { display: inline-flex; align-items: center; padding: 6px 14px; background: white; border: 1px solid #f3f4f6; border-radius: 20px; font-size: 13px; font-weight: 700; color: #4b5563; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 4px; cursor: pointer; transition: all 0.3s; user-select: none; }
-    .legend-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .legend-pill.inactive { opacity: 0.3; background: #f3f4f6; box-shadow: none; transform: scale(0.95); }
-    .legend-pill.active { border-color: var(--theme-color); background-color: #fffbeb; }
+    /* 核心: 圖表 Legend 膠囊的物理彈簧效果 */
+    .legend-pill { 
+      display: inline-flex; align-items: center; padding: 6px 14px; background: white; border: 1px solid #f3f4f6; border-radius: 20px; 
+      font-size: 13px; font-weight: 700; color: #4b5563; box-shadow: 0 2px 4px rgba(0,0,0,0.02); margin-bottom: 4px; cursor: pointer; 
+      transition: all 0.3s var(--spring-curve); /* 使用彈簧曲線 */
+      user-select: none; 
+    }
+    .legend-pill:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .legend-pill.inactive { opacity: 0.3; background: #f3f4f6; box-shadow: none; transform: scale(0.95); transition: all 0.3s ease-out; }
+    .legend-pill.active { border-color: var(--theme-color); background-color: #fffbeb; transform: scale(1.0); }
     .legend-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
     
     .input-label { font-size: 10px; color: #9ca3af; margin-bottom: 2px; display: block; }
     
+    /* Toast 絲滑滑入/滑出 */
+    .toast-banner { transition: transform 0.4s var(--smooth-curve); }
     .toast-active { transform: translateY(0) !important; }
 
     /* Button visibility on card hover */
-    .card-actions { opacity: 0; transition: opacity 0.2s; }
+    .card-actions { opacity: 0; transition: opacity 0.3s var(--smooth-curve); }
     .group:hover .card-actions { opacity: 1; }
     @media (max-width: 768px) { .card-actions { opacity: 1; } }
     
@@ -102,140 +227,37 @@
     .toggle-btn { padding: 8px 16px; border-radius: 99px; font-size: 12px; font-weight: bold; z-index: 2; position: relative; transition: color 0.3s; width: 140px; text-align: center; }
     .toggle-btn.active { color: white; }
     .toggle-btn.inactive { color: #9ca3af; }
-    .toggle-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background-color: var(--theme-color); border-radius: 99px; transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); z-index: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .toggle-slider { 
+      position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); background-color: var(--theme-color); 
+      border-radius: 99px; 
+      transition: transform 0.4s var(--smooth-curve); /* 使用絲滑曲線 */
+      z-index: 1; box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+    }
     
     /* Settlement Card */
     .settlement-card { background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%); border: 1px solid #fcd34d; }
     
     /* --- 結帳清單專用樣式 (膠囊+長箭頭) --- */
     .info-pill {
-      display: flex;
-      align-items: center;
-      background-color: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 50px;
-      padding: 4px;
-      padding-right: 12px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-      height: 40px;
-      min-width: 90px;
-      flex-shrink: 0;
+      display: flex; align-items: center; background-color: #fff; border: 1px solid #e2e8f0; border-radius: 50px; padding: 4px; padding-right: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); height: 40px; min-width: 90px; flex-shrink: 0;
+      transition: all 0.3s var(--spring-curve); /* 加入彈簧 */
     }
+    .info-pill:hover { transform: translateY(-1px) scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
 
-    .circle-avatar-new {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 13px;
-      margin-right: 8px;
-      flex-shrink: 0;
-    }
-
-    .pill-text {
-      font-size: 14px;
-      font-weight: 700;
-      color: #475569;
-      white-space: nowrap;
-    }
-
-    .transfer-middle {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      padding: 0 8px;
-    }
-
-    .action-label-settlement { 
-      font-size: 11px;
-      color: #F97316;
-      font-weight: 700;
-      margin-bottom: -4px;
-      letter-spacing: 0.5px;
-    }
-
-    .long-arrow-settlement { 
-      width: 100%;
-      max-width: 60px;
-      height: 24px;
-      stroke-width: 2.5; 
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      transition: transform 0.3s ease;
-    }
+    .circle-avatar-new { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 13px; margin-right: 8px; flex-shrink: 0; }
+    .pill-text { font-size: 14px; font-weight: 700; color: #475569; white-space: nowrap; }
+    .transfer-middle { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 0 8px; }
+    .action-label-settlement { font-size: 11px; color: #F97316; font-weight: 700; margin-bottom: -4px; letter-spacing: 0.5px; }
+    .long-arrow-settlement { width: 100%; max-width: 60px; height: 24px; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.3s var(--smooth-curve); }
     
-    /* NEW: Custom Select for Travelers with Avatar */
-    .traveler-select {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        position: relative;
-        border-bottom: 1px solid #ddd;
-        transition: border-color 0.3s;
-    }
-    .traveler-select:focus-within {
-        border-bottom-color: var(--theme-color);
-    }
-    .traveler-select select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background: transparent;
-        border: none;
-        padding: 4px 0;
-        padding-right: 20px; /* Space for custom arrow */
-        font-size: 14px;
-        font-weight: 700;
-        color: #475569;
-        cursor: pointer;
-        z-index: 2;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0; /* Hide native select */
-    }
-    .traveler-select .select-display {
-        display: flex;
-        align-items: center;
-        flex: 1;
-        min-height: 30px;
-        z-index: 1;
-        pointer-events: none; /* Let clicks pass to the hidden select */
-    }
-    .traveler-select .select-display .name {
-        font-size: 14px;
-        font-weight: 700;
-        color: #475569;
-        margin-left: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .traveler-select .select-display .arrow {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 12px;
-        height: 12px;
-        color: #9ca3af;
-        pointer-events: none;
-    }
-
-    /* 確保日期文本不會被遮擋 */
-    #current-date-text {
-        min-width: 80px; /* 增加空間以顯示年/月/日 */
-        display: inline-block;
-        white-space: nowrap;
-    }
+    .traveler-select { display: flex; align-items: center; width: 100%; position: relative; border-bottom: 1px solid #ddd; transition: border-color 0.4s var(--smooth-curve); }
+    .traveler-select:focus-within { border-bottom-color: var(--theme-color); }
+    .traveler-select select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background: transparent; border: none; padding: 4px 0; padding-right: 20px; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; z-index: 2; position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; }
+    .traveler-select .select-display { display: flex; align-items: center; flex: 1; min-height: 30px; z-index: 1; pointer-events: none; }
+    .traveler-select .select-display .name { font-size: 14px; font-weight: 700; color: #475569; margin-left: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .traveler-select .select-display .arrow { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; color: #9ca3af; pointer-events: none; }
+    
+    #current-date-text { min-width: 80px; display: inline-block; white-space: nowrap; }
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -244,7 +266,7 @@
 <body class="pb-28">
 
   <div id="pdf-temp-container" class="fixed top-0 left-[-9999px] bg-white p-10 w-[210mm] min-h-[297mm] font-serif text-ink"></div>
-  <div id="message-banner" class="fixed top-0 left-0 right-0 py-3 text-center text-white z-[9999] transition-transform duration-300 transform -translate-y-full shadow-md font-serif tracking-widest bg-[var(--theme-color)] text-sm"></div>
+  <div id="message-banner" class="toast-banner fixed top-0 left-0 right-0 py-3 text-center text-white z-[9999] transition-transform duration-300 transform -translate-y-full shadow-md font-serif tracking-widest bg-[var(--theme-color)] text-sm"></div>
 
   <div id="edit-settings-modal" class="hidden">
       <div id="edit-modal-overlay" onclick="toggleSettings()">
@@ -285,10 +307,10 @@
   </div>
 
   <div id="screen-project-list" class="min-h-screen px-6 py-10 flex flex-col items-center bg-[#53565C]">
-      <h1 class="text-3xl font-serif font-bold text-white mb-2 tracking-widest">我的旅程</h1>
-      <p class="text-xs text-gray-300 mb-8 font-sans tracking-wider">SELECT YOUR JOURNEY</p>
+      <h1 class="text-3xl font-serif font-bold text-white mb-2 tracking-widest animate-fade-in" style="animation-delay: 0.1s;">我的旅程</h1>
+      <p class="text-xs text-gray-300 mb-8 font-sans tracking-wider animate-fade-in" style="animation-delay: 0.2s;">SELECT YOUR JOURNEY</p>
       <div id="project-list-container" class="w-full max-w-md space-y-4"></div>
-      <button onclick="createNewProject()" class="mt-8 px-6 py-3 bg-white text-[#53565C] rounded-xl font-bold text-sm shadow-lg hover:bg-gray-100 transition flex items-center gap-2"><span>＋ 規劃新旅程</span></button>
+      <button onclick="createNewProject()" class="mt-8 px-6 py-3 bg-white text-[#53565C] rounded-xl font-bold text-sm shadow-lg hover:bg-gray-100 transition flex items-center gap-2 animate-bounce-in" style="animation-delay: 0.5s;"><span>＋ 規劃新旅程</span></button>
   </div>
 
   <div id="screen-itinerary" class="hidden transition-opacity duration-500">
@@ -304,14 +326,14 @@
         </div>
       </header>
 
-      <div class="sticky top-0 z-40 bg-paper/95 backdrop-blur-sm border-b border-gray-200/50 py-2 shadow-sm transition-all duration-300">
+      <div class="sticky top-0 z-40 bg-paper/95 backdrop-blur-sm border-b border-gray-200/50 py-2 shadow-sm sticky-header">
         <div class="flex items-center justify-between w-full px-4 md:px-8 h-[70px]">
             <div id="day-scroll-container" class="smooth-scroll-container flex items-center overflow-x-auto no-scrollbar gap-3 flex-1 min-w-0"></div>
             </div>
       </div>
 
       <main class="px-5 py-6 max-w-2xl mx-auto min-h-[60vh] relative">
-        <div class="mb-6 animate-slide-up">
+        <div class="mb-6 animate-fade-in" style="animation-delay: 0.2s;">
             <div class="flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <h2 id="current-day-heading" class="text-3xl md:text-4xl font-serif font-black text-ink tracking-tight whitespace-nowrap">Day 1</h2>
@@ -355,10 +377,10 @@
   </div>
 
   <div id="screen-lists" class="hidden min-h-screen px-6 py-10 max-w-lg mx-auto">
-      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2 text-center">清單管理</h1>
-      <p class="text-xs text-sub mb-6 font-sans text-center tracking-widest">LISTS & SHOPPING</p>
+      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2 text-center animate-fade-in" style="animation-delay: 0.1s;">清單管理</h1>
+      <p class="text-xs text-sub mb-6 font-sans text-center tracking-widest animate-fade-in" style="animation-delay: 0.2s;">LISTS & SHOPPING</p>
       
-      <div class="flex p-1 bg-gray-100 rounded-xl mx-auto max-w-xs mb-8 shadow-inner relative">
+      <div class="flex p-1 bg-gray-100 rounded-xl mx-auto max-w-xs mb-8 shadow-inner relative animate-fade-in" style="animation-delay: 0.3s;">
           <div id="sub-tab-checklist" class="w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-active text-sm" onclick="switchListSubTab('checklist')">🧳 行李準備</div>
           <div id="sub-tab-shopping" class="w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-inactive text-sm" onclick="switchListSubTab('shopping')">🛍️ 購物願望</div>
       </div>
@@ -388,10 +410,10 @@
   </div>
 
   <div id="screen-expenses" class="hidden min-h-screen px-6 py-10 max-w-4xl mx-auto">
-      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2">費用列表</h1>
-      <p class="text-xs text-sub mb-6 font-sans">EXPENSES RECORD</p>
+      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2 animate-fade-in" style="animation-delay: 0.1s;">費用列表</h1>
+      <p class="text-xs text-sub mb-6 font-sans animate-fade-in" style="animation-delay: 0.2s;">EXPENSES RECORD</p>
       
-      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6" id="expense-form-container">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 animate-bounce-in" id="expense-form-container" style="animation-delay: 0.3s;">
           <div class="grid grid-cols-2 gap-4 mb-4">
               <div>
                   <label class="input-label">日期</label>
@@ -436,10 +458,10 @@
   </div>
 
   <div id="screen-chart" class="hidden min-h-screen px-6 py-10 max-w-4xl mx-auto flex flex-col">
-      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2">花費統計</h1>
-      <p class="text-xs text-sub mb-6 font-sans">STATISTICS</p>
+      <h1 class="text-3xl font-serif font-bold text-[var(--theme-color)] mb-2 animate-fade-in" style="animation-delay: 0.1s;">花費統計</h1>
+      <p class="text-xs text-sub mb-6 font-sans animate-fade-in" style="animation-delay: 0.2s;">STATISTICS</p>
       
-      <div class="flex justify-center mb-8">
+      <div class="flex justify-center mb-8 animate-fade-in" style="animation-delay: 0.3s;">
           <div class="toggle-container" onclick="toggleChartMode()">
               <div class="toggle-slider" id="chart-mode-slider"></div>
               <div class="toggle-btn active" id="btn-mode-payment">💸 真實支付 (現金)</div>
@@ -447,7 +469,7 @@
           </div>
       </div>
       
-      <div id="settlement-section" class="mb-8 w-full animate-slide-up">
+      <div id="settlement-section" class="mb-8 w-full animate-bounce-in" style="animation-delay: 0.4s;">
           <div class="settlement-card rounded-2xl p-5 shadow-sm">
              <h3 class="text-sm font-bold text-ink mb-4 border-b border-[var(--theme-color)]/30 pb-2 flex items-center gap-2">
                  <span>🤝</span> 結帳分帳建議
@@ -495,24 +517,36 @@
     let activeCategoryFilter = null;
     let currentDisplayCurrency = 'JPY'; 
     let currentChartMode = 'payment'; // 'payment' (Real Payment/Cashflow) or 'consumption' (Beneficiary/Attribution)
+    let observer = null; // Intersection Observer instance
+    let isInitialLoad = true; // 追蹤是否為頁面剛載入
 
     const CURRENCY_SYMBOLS = { 'JPY': '¥', 'KRW': '₩', 'USD': '$', 'THB': '฿', 'EUR': '€', 'CNY': '¥' };
     let COLORS = ['#C6A664', '#E6DCC3', '#A88B4D', '#333333', '#8C8C8C', '#d1d5db', '#93c5fd', '#fca5a5'];
     const CAT_COLORS = { '食': '#fca5a5', '衣': '#fdba74', '住': '#fcd34d', '行': '#86efac', '育': '#93c5fd', '樂': '#c4b5fd', '購': '#f472b6', '雜': '#94a3b8' };
+    
+    // NEW: 交通工具清單
+    const TRANSPORT_MODES = {
+        'walk': '🚶 步行',
+        'metro': '🚇 地鐵/電車',
+        'car': '🚗 計程車/自駕',
+        'bus': '🚌 公車/巴士',
+        'flight': '✈️ 飛機',
+        'boat': '🚢 船/渡輪',
+    };
 
     // UPDATED TEMPLATE STRUCTURE
     const TEMPLATES = {
         departure: [ 
-            { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] }, 
+            { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }], travel: { mode: 'car', duration: 30 } }, 
             { time: "10:30", icon: "✈️", label: "FLIGHT", location: "機場 T1", address:"", desc: "辦理登機", costType: "行", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] } 
         ],
         general: [ 
-            { time: "09:00", icon: "☕", label: "MORNING", location: "Blue Bottle", address:"京都市左京區南禪寺草川町64", desc: "晨間咖啡", costType: "食", expenseDetail: "拿鐵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
-            { time: "11:30", icon: "🍜", label: "LUNCH", location: "麵屋豬一", address:"京都市下京區恵美須之町542", desc: "必比登推薦", costType: "食", expenseDetail: "拉麵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
+            { time: "09:00", icon: "☕", label: "MORNING", location: "Blue Bottle", address:"京都市左京區南禪寺草川町64", desc: "晨間咖啡", costType: "食", expenseDetail: "拿鐵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'walk', duration: 15 } }, 
+            { time: "11:30", icon: "🍜", label: "LUNCH", location: "麵屋豬一", address:"京都市下京區恵美須之町542", desc: "必比登推薦", costType: "食", expenseDetail: "拉麵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'bus', duration: 25 } }, 
             { time: "15:00", icon: "⛩️", label: "VISIT", location: "清水寺", address:"京都市東山區清水1丁目294", desc: "世界遺產", costType: "育", expenseDetail: "門票", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] } 
         ],
         return: [ 
-            { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
+            { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'metro', duration: 40 } }, 
             { time: "16:00", icon: "🏠", label: "HOME", location: "返抵國門", address:"", desc: "平安回家", costType: "行", expenseDetail: "機捷", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] } 
         ]
     };
@@ -541,8 +575,25 @@
         return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
     
+    // NEW: 產生主題色淺 50% 的函數
+    function generateLighterColor(hex, percent) {
+      if (!hex) return '#F9F7F2';
+      hex = hex.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+
+      const amount = Math.min(255, Math.max(0, Math.round(255 * (percent / 100))));
+
+      const R = Math.min(255, r + amount);
+      const G = Math.min(255, g + amount);
+      const B = Math.min(255, b + amount);
+      
+      const toHex = (c) => ('0' + c.toString(16)).slice(-2);
+      return `#${toHex(R)}${toHex(G)}${toHex(B)}`;
+    }
+
     // --- 新增旅伴 Select 渲染工具函式 ---
-    // 修正: 移除複雜的 handleSelectChange 與 eval，改用直接事件綁定
     function renderTravelerSelect(actIndex, splitId, selectedPerson, travelers, fieldName) {
         const id = `${fieldName}-${actIndex}-${splitId}`;
         let options = '';
@@ -585,7 +636,53 @@
     // --- 結束旅伴 Select 渲染工具函式 ---
 
 
-    function init() { loadProjects(); renderProjectList(); }
+    function init() { 
+      loadProjects(); 
+      renderProjectList(); 
+      setupIntersectionObserver(); // 初始化滾動監聽器
+      isInitialLoad = false; // 初始載入完成
+    }
+    
+    // --- 核心：Intersection Observer 設置 ---
+    function setupIntersectionObserver() {
+        if (observer) {
+            observer.disconnect(); // 清除舊的監聽器
+        }
+        
+        observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach((entry, index) => {
+                const el = entry.target;
+                if (entry.isIntersecting) {
+                    // 進入視窗
+                    if (!el.classList.contains('in-view')) {
+                        // 計算交錯延遲 (0ms, 50ms, 100ms, ...)
+                        // 滾動漸入只在非編輯模式下觸發，以保持編輯模式下拖曳的即時性
+                        if (!isEditMode) {
+                            // 使用 data-index 確保我們計算的是 DOM 順序而不是 IO 觸發順序
+                            const dataIndex = el.dataset.globalIndex || index; 
+                            const delay = (dataIndex % 10) * 50; 
+                            el.style.transitionDelay = `${delay}ms`;
+                        } else {
+                            el.style.transitionDelay = '0ms';
+                        }
+                        el.classList.add('in-view');
+                    }
+                } else {
+                    // 離開視窗，將其重置為隱藏狀態（如果需要重複動畫的話）
+                    // 為了避免滾動時卡頓，只在切換 Day 時才真正清除 'in-view' 狀態
+                    // el.classList.remove('in-view'); 
+                }
+            });
+        }, {
+            rootMargin: '0px 0px -10% 0px', // 提前 10% 底部觸發
+            threshold: 0.1 // 至少 10% 元素可見
+        });
+        
+        // 註冊目前 DOM 中所有的 timeline-card
+        document.querySelectorAll('.timeline-card').forEach(card => observer.observe(card));
+    }
+    // --- 核心：Intersection Observer 結束 ---
+
     function loadProjects() { const raw=localStorage.getItem('trip_projects_v30'); if(raw)projects=JSON.parse(raw); else { projects=[{id:'default',name:'2026阪京之旅',themeColor:'#C6A664',updatedAt:new Date().toISOString()}]; localStorage.setItem('trip_projects_v30',JSON.stringify(projects)); saveTripData('default',{theme:"2026阪京之旅",startDate:"2026-01-17",endDate:"2026-01-22",bannerUrl:"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2070&auto=format&fit=crop",themeColor:"#C6A664",exchangeRate:0.215,baseCurrency:'JPY',checklist:[],shoppingList:[],expenses:[],travelers:['自己','公費'],days:{}}); } }
     
     function switchTab(tab) {
@@ -593,8 +690,17 @@
         document.querySelectorAll('.nav-btn svg, .nav-btn span').forEach(e=>e.classList.replace('text-[var(--theme-color)]','text-gray-400'));
         document.getElementById('nav-itinerary-float').classList.remove('active');
         
+        // 停止舊的觀察者，防止重複觸發
+        if (observer) observer.disconnect();
+
         if(tab==='list') backToProjectList();
-        else if(tab==='itinerary') { if(!currentProjectId)return backToProjectList(); document.getElementById('screen-itinerary').classList.remove('hidden'); document.getElementById('nav-itinerary-float').classList.add('active'); updateBudgetSummary(); }
+        else if(tab==='itinerary') { 
+            if(!currentProjectId)return backToProjectList(); 
+            document.getElementById('screen-itinerary').classList.remove('hidden'); 
+            document.getElementById('nav-itinerary-float').classList.add('active'); 
+            updateBudgetSummary();
+            renderTimeline(true); // 強制重新渲染並觸發 IO
+        }
         else if(tab==='lists') { if(!currentProjectId)return backToProjectList(); document.getElementById('screen-lists').classList.remove('hidden'); renderListsPage(); highlightNav('nav-lists'); }
         else if(tab==='expenses') { if(!currentProjectId)return backToProjectList(); document.getElementById('screen-expenses').classList.remove('hidden'); initExpenseForm(); renderExpensesList(); highlightNav('nav-expenses'); }
         else if(tab==='chart') { if(!currentProjectId)return backToProjectList(); document.getElementById('screen-chart').classList.remove('hidden'); renderChartPage(); highlightNav('nav-chart'); }
@@ -629,7 +735,7 @@
         applyTheme(); 
         renderHeader(); 
         renderDayTabs(); 
-        renderTimeline(); 
+        renderTimeline(true); // 首次進入時強制重新渲染並觸發 IO
         updateDayHeader(); // 確保日期顯示
         updateBudgetSummary(); 
     }
@@ -640,13 +746,16 @@
     
     function applyTheme() { 
         document.documentElement.style.setProperty('--theme-color',tripData.themeColor);
+        // NEW: 更新淺色主題色
+        document.documentElement.style.setProperty('--travel-bg-color', generateLighterColor(tripData.themeColor, 40));
         COLORS[0] = tripData.themeColor;
     }
     
     function renderHeader() { 
         document.getElementById('hero-image').src=tripData.bannerUrl; 
         const c=document.getElementById('header-content'); 
-        c.innerHTML=`<div class="text-[10px] tracking-[0.2em] uppercase opacity-80 mb-2 font-sans animate-slide-up font-bold">Travel Itinerary</div><h1 class="text-3xl font-serif font-bold tracking-widest drop-shadow-lg text-center px-4 animate-slide-up">${tripData.theme}</h1><p class="mt-2 text-xs font-bold tracking-wider opacity-90 font-sans animate-slide-up">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>`;
+        // 替換 animate-slide-up 為 animate-fade-in/bounce-in
+        c.innerHTML=`<div class="text-[10px] tracking-[0.2em] uppercase opacity-80 mb-2 font-sans animate-fade-in" style="animation-delay: 0.3s; font-weight: bold;">Travel Itinerary</div><h1 class="text-3xl font-serif font-bold tracking-widest drop-shadow-lg text-center px-4 animate-bounce-in" style="animation-delay: 0.4s;">${tripData.theme}</h1><p class="mt-2 text-xs font-bold tracking-wider opacity-90 font-sans animate-fade-in" style="animation-delay: 0.5s;">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>`;
         
         document.getElementById('edit-theme').value = tripData.theme;
         document.getElementById('edit-start-date').value = tripData.startDate;
@@ -662,8 +771,8 @@
     function showToast(message) {
         const b = document.getElementById('message-banner');
         b.textContent = message;
-        b.classList.remove('-translate-y-full'); 
-        setTimeout(() => { b.classList.add('-translate-y-full'); }, 2500);
+        b.classList.add('toast-active'); 
+        setTimeout(() => { b.classList.remove('toast-active'); }, 2500);
     }
 
     // --- 修正後的重置資料功能 (Fixed Reset Function) ---
@@ -691,7 +800,7 @@
                 applyTheme();
                 renderHeader();
                 renderDayTabs();
-                renderTimeline();
+                renderTimeline(true);
                 updateBudgetSummary();
                 if(!document.getElementById('screen-chart').classList.contains('hidden')) { renderChartPage(); }
                 showToast("專案已成功重置！"); // 使用 showToast 替換 alert
@@ -701,7 +810,14 @@
     
     function toggleSettings() {
         const modal = document.getElementById('edit-settings-modal');
-        if(modal.classList.contains('hidden')) { renderHeader(); modal.classList.remove('hidden'); }
+        if(modal.classList.contains('hidden')) { 
+          renderHeader(); 
+          modal.classList.remove('hidden'); 
+          setTimeout(() => { modal.classList.add('show'); }, 10); // 觸發 CSS 轉場
+        } else {
+          modal.classList.remove('show');
+          setTimeout(() => { modal.classList.add('hidden'); }, 300); // 延遲隱藏
+        }
     }
 
     function saveAndCloseSettings() {
@@ -755,10 +871,10 @@
         
         currentDisplayCurrency = tripData.baseCurrency;
 
-        document.getElementById('edit-settings-modal').classList.add('hidden');
+        toggleSettings(); // 關閉模態框
         renderHeader();
         renderDayTabs(); 
-        renderTimeline(); 
+        renderTimeline(true); 
         updateBudgetSummary();
     }
 
@@ -781,7 +897,7 @@
             tpl.classList.add('hidden'); 
             quickAddBtn.classList.remove('hidden'); // 恢復顯示快速新增按鈕
         }
-        renderTimeline(); 
+        renderTimeline(true); // 重新渲染，讓卡片狀態反映編輯模式
     }
 
     function updateMeta(f,v) { tripData[f]=v; if(f==='themeColor')applyTheme(); saveCurrentTrip(); renderHeader(); }
@@ -806,7 +922,7 @@
                 
                 // DATA MIGRATION: Ensure old structure is converted
                 newDays[key].activities?.forEach(act => {
-                    // This migration logic ensures old formats are converted to the new {beneficiary, payer} array structure
+                    // Split migration logic (remains the same)
                     if (act.splits && !Array.isArray(act.splits)) {
                         let tempSplits = [];
                         if (typeof act.splits === 'object' && act.splits !== null) {
@@ -822,22 +938,23 @@
                             });
                         }
                         act.splits = tempSplits.length > 0 ? tempSplits : JSON.parse(JSON.stringify(defaultSplit));
-                        if(act.payer) delete act.payer; 
+                        if(act.payer) delete a.payer; 
                     } else if (act.splits && Array.isArray(act.splits)) {
                         act.splits = act.splits.map(s => {
-                            if(s.person) { // Migrate old 'person' to 'beneficiary'
-                                s.beneficiary = s.person;
-                                delete s.person;
-                            }
-                            // Ensure new fields are present
+                            if(s.person) { s.beneficiary = s.person; delete s.person; }
                             if(!s.payer) s.payer = act.payer || defaultTraveler;
-                            if(!s.beneficiary) s.beneficiary = defaultTraveler; // Should already be set or defaulted above
+                            if(!s.beneficiary) s.beneficiary = defaultTraveler; 
                             if(!s.currency) s.currency = act.currency || defaultCurrency;
                             return s;
                         });
-                        if(act.payer) delete act.payer; 
+                        if(act.payer) delete a.payer; 
                     } else {
                         act.splits = JSON.parse(JSON.stringify(defaultSplit));
+                    }
+                    
+                    // NEW: Travel migration (ensure structure is present)
+                    if (!act.travel || typeof act.travel.mode === 'undefined') {
+                        act.travel = { mode: 'walk', duration: 0 };
                     }
                 });
                 
@@ -846,6 +963,8 @@
                 templ.forEach(t => { 
                     t.splits = JSON.parse(JSON.stringify(defaultSplit)); 
                     t.currency = t.currency || defaultCurrency;
+                    // NEW: Ensure travel field is initialized for new template activities
+                    if (!t.travel) t.travel = { mode: 'walk', duration: 0 };
                 });
                 newDays[key] = { date: dateStr, location: "LOCATION", activities: templ }; 
             }
@@ -855,7 +974,28 @@
         saveCurrentTrip();
     }
 
-    function renderDayTabs() { const c=document.getElementById('day-scroll-container'); c.innerHTML=''; Object.keys(tripData.days).forEach((k,idx)=>{ const i=idx+1, btn=document.createElement('button'), active=i===currentDay; btn.className=`smooth-scroll-item flex-shrink-0 w-[56px] h-[56px] flex flex-col items-center justify-center transition-all duration-300 snap-start ${active?'day-tab-active':'day-tab-inactive'}`; btn.onclick=()=>{currentDay=i; renderDayTabs(); renderTimeline(); updateDayHeader(); btn.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})}; btn.innerHTML=`<span class="text-[9px] uppercase font-sans opacity-80">Day</span><span class="text-lg font-serif font-bold leading-none mt-0.5">${i}</span>`; c.appendChild(btn); }); }
+    function renderDayTabs() { 
+        const c=document.getElementById('day-scroll-container'); 
+        c.innerHTML=''; 
+        
+        Object.keys(tripData.days).forEach((k,idx)=>{ 
+            const i=idx+1, btn=document.createElement('button'), active=i===currentDay; 
+            btn.className=`smooth-scroll-item flex-shrink-0 w-[56px] h-[56px] flex flex-col items-center justify-center transition-all duration-300 snap-start ${active?'day-tab-active':'day-tab-inactive'}`; 
+            
+            // 新增一個小小的延遲，讓 Day Tabs 出現時也有交錯感
+            btn.style.animation = `fade-in 0.3s ease-out forwards ${0.05 * idx}s`; 
+
+            btn.onclick=()=>{
+                currentDay=i; 
+                renderDayTabs(); 
+                renderTimeline(true); // 切換 Day 時強制重新渲染並觸發 IO
+                updateDayHeader(); 
+                btn.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"})
+            }; 
+            btn.innerHTML=`<span class="text-[9px] uppercase font-sans opacity-80">Day</span><span class="text-lg font-serif font-bold leading-none mt-0.5">${i}</span>`; 
+            c.appendChild(btn); 
+        }); 
+    }
     function applyDayTemplate(t) { 
         if(window.confirm("套用模板？")) { 
             const defaultTraveler = tripData.travelers[0] || '自己';
@@ -869,23 +1009,128 @@
                 }
                 a.currency = a.currency || defaultCurrency;
                 if(a.payer) delete a.payer; 
+                if (!a.travel) a.travel = { mode: 'walk', duration: 0 }; // NEW: Travel field for templates
             });
             
             tripData.days[`Day ${currentDay}`].activities=templ; 
-            renderTimeline(); 
-            saveCurrentTrip(); 
+            saveCurrentTrip();
+            renderTimeline(true); // 套用模板後強制觸發 IO
+            
         } 
     }
     
+    // NEW: 渲染交通小卡 (已更新佈局和顏色)
+    function renderTravelMiniCard(currentAct, nextAct, actIndex, globalIndex) {
+        // Ensure travel object exists in the current activity
+        if (!currentAct.travel || typeof currentAct.travel.mode === 'undefined') {
+            currentAct.travel = { mode: 'walk', duration: 0 };
+        }
+        
+        const travel = currentAct.travel;
+        const fromLocation = currentAct.location;
+        const toLocation = nextAct.location;
+        const fromIcon = currentAct.icon; 
+        const toIcon = nextAct.icon; 
+        
+        // 獲取淺色背景
+        const bgColor = document.documentElement.style.getPropertyValue('--travel-bg-color') || '#FFFFFF';
+
+        let optionsHtml = '';
+        for (const key in TRANSPORT_MODES) {
+            optionsHtml += `<option value="${key}" ${travel.mode === key ? 'selected' : ''}>${TRANSPORT_MODES[key]}</option>`;
+        }
+        
+        const travelCard = document.createElement('div');
+        // 使用 relative, flex, justify-center 包裹
+        travelCard.className = 'relative flex justify-center pt-4 pb-2 my-2 timeline-travel-card';
+        
+        // 使用一個獨立的 div 作為動畫目標，並加入 timeline-card class
+        const animatableCard = document.createElement('div');
+        // 核心修改: 使用動態背景色
+        animatableCard.className = 'w-full max-w-xs p-3 rounded-2xl shadow-lg border border-gray-100 relative z-20 timeline-card';
+        animatableCard.style.backgroundColor = bgColor;
+        animatableCard.dataset.globalIndex = globalIndex;
+        
+        const nextTime = nextAct.time;
+
+        animatableCard.innerHTML = `
+            <div class="absolute w-1 h-full bg-gray-300 left-[-20px] top-0 z-10"></div> <!-- Timeline Connector -->
+
+            <div class="flex items-center justify-between gap-1">
+                <!-- 起點 (From) -->
+                <div class="flex flex-col text-xs text-gray-500 font-sans w-[35%] pr-1">
+                    <span class="font-bold text-ink text-[10px] whitespace-nowrap">從</span>
+                    <span class="truncate text-gray-700 font-bold flex items-center gap-0.5 text-sm leading-tight">
+                        ${fromIcon} <span class="truncate">${fromLocation || '出發地'}</span>
+                    </span>
+                </div>
+                
+                <!-- 交通工具 & 時間 (Middle) -->
+                <div class="flex flex-col items-center flex-1 min-w-0 -mt-1 space-y-1">
+                    <svg class="w-5 h-5 text-[var(--theme-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.726A8.995 8.995 0 0112 21c-2.73 0-5.132-1.11-6.879-2.899M12 3v18M12 3a9 9 0 00-5.342 1.658L12 3"/></svg>
+
+                    <!-- 核心修改: 交通工具整行顯示，分鐘數單獨一行 -->
+                    <select onchange="updateTravelInfo(${actIndex}, 'mode', this.value)" 
+                            class="text-[12px] font-bold text-center border-b border-gray-200 bg-transparent w-full cursor-pointer focus:border-[var(--theme-color)] pb-1 pt-0.5 outline-none font-sans" style="height: 24px;">
+                        ${optionsHtml}
+                    </select>
+
+                    <div class="flex items-center gap-1">
+                        <span class="text-[10px] text-gray-400">約</span>
+                        <input type="number" value="${travel.duration || 0}" 
+                               onchange="updateTravelInfo(${actIndex}, 'duration', this.value)" 
+                               class="w-8 text-sm font-bold text-center bg-transparent border-b border-gray-300 p-0 focus:border-[var(--theme-color)] outline-none" 
+                               placeholder="0">
+                        <span class="text-[10px] text-gray-400">分</span>
+                    </div>
+                </div>
+
+                <!-- 終點 (To) -->
+                <div class="flex flex-col text-xs text-gray-500 font-sans w-[35%] items-end pl-1">
+                    <span class="font-bold text-ink text-[10px] whitespace-nowrap">到</span>
+                    <span class="truncate text-gray-700 font-bold flex items-center justify-end gap-0.5 text-sm leading-tight">
+                        ${toIcon} <span class="truncate">${toLocation || '目的地'}</span>
+                    </span>
+                </div>
+            </div>
+            <p class="text-[10px] text-gray-400 text-center mt-2 border-t border-gray-50/50 pt-1">下一站 ${nextTime}</p>
+        `;
+        travelCard.appendChild(animatableCard);
+        return travelCard;
+    }
+
+    // NEW: 更新交通資訊
+    function updateTravelInfo(actIndex, field, value) {
+        const act = tripData.days[`Day ${currentDay}`].activities[actIndex];
+        if (!act.travel) act.travel = { mode: 'walk', duration: 0 };
+        
+        if (field === 'duration') {
+            act.travel.duration = parseInt(value) || 0;
+        } else {
+            act.travel[field] = value;
+        }
+        
+        saveCurrentTrip();
+        const modeText = TRANSPORT_MODES[act.travel.mode] || act.travel.mode;
+        showToast(`交通資訊已更新：${modeText} ${act.travel.duration} 分鐘`);
+    }
+    
     // Render Timeline 
-    // Render Timeline (修正編輯模式下，時間欄位被擠出螢幕的問題 + 新增分帳標題)
-    function renderTimeline() {
+    // forceRenderAndObserve: 強制清除 in-view 狀態並重新註冊 IO
+    function renderTimeline(forceRenderAndObserve = false) {
         const c=document.getElementById('timeline-container'); c.innerHTML='';
         const activities = tripData.days[`Day ${currentDay}`]?.activities || [];
         const baseCurr = tripData.baseCurrency || 'JPY';
         const baseSymbol = CURRENCY_SYMBOLS[baseCurr] || baseCurr;
         const defaultTraveler = tripData.travelers[0] || '自己';
+        let globalCardIndex = 0;
 
+        // 停止舊的觀察者
+        if (observer) {
+            observer.disconnect();
+        }
+        
+        // 1. 渲染活動卡片與交通小卡
         activities.forEach((act, idx) => {
             // --- 資料結構確保 ---
             if (!act.splits || !Array.isArray(act.splits) || act.splits.length === 0) {
@@ -899,8 +1144,14 @@
                     return s;
                 });
             }
-            if(act.payer) delete act.payer; 
-
+            if(act.payer) delete a.payer; 
+            
+            // NEW: Travel field check/initialization
+            if (idx < activities.length - 1 && (!act.travel || typeof act.travel.mode === 'undefined')) {
+                 act.travel = { mode: 'walk', duration: 0 };
+            }
+            if (idx === activities.length - 1) { act.travel = null; } // 最後一項活動不需要 travel
+            
             // --- 計算顯示金額 ---
             let totalCost = act.splits.reduce((sum, s) => sum + (s.amount || 0), 0);
             let secondaryCostDisplay = '';
@@ -918,13 +1169,26 @@
             if (act.manualState === 'open') isExpanded = true;
             else if (act.manualState === 'closed') isExpanded = false;
             else isExpanded = (totalCost > 0);
+            
+            // 獲取淺色背景 (確保在渲染活動卡片之前，CSS 變數已經更新)
+            const cardBgColor = document.documentElement.style.getPropertyValue('--travel-bg-color') || '#FFFFFF';
 
             const el=document.createElement('div'); 
-            el.className='relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group animate-slide-up bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item'; 
-            el.style.animationDelay=`${idx*0.05}s`;
+            
+            // 核心: 加入 timeline-card class，並根據是否為編輯模式來決定初始狀態
+            let initialClass = 'timeline-card';
+            if (isEditMode || !forceRenderAndObserve) {
+                initialClass = 'timeline-card in-view';
+            } else {
+                initialClass = 'timeline-card';
+            }
+            
+            el.className=`relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item ${initialClass}`; 
             el.dataset.index = idx;
+            el.dataset.globalIndex = globalCardIndex; // 設置全局索引
+            globalCardIndex++; // 增加全局索引
 
-            // Drag Events
+            // Drag Events (unchanged)
             el.addEventListener('dragstart', handleSortableDragStart); 
             el.addEventListener('dragover', handleSortableDragOver); 
             el.addEventListener('drop', handleActivityDrop); 
@@ -967,7 +1231,7 @@
             const descHtml = act.desc ? `<div class="flex items-start gap-2 mb-3 mt-2 text-xs font-bold text-gray-500 font-sans select-text"><span class="flex-shrink-0 mt-0.5">📝</span><p class="whitespace-pre-wrap leading-relaxed">${act.desc}</p></div>` : '';
             const dragHandleHtml = `<div class="drag-handle-btn cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-[var(--theme-color)] flex items-center justify-center transition" title="拖曳排序" draggable="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg></div>`;
 
-            // --- Edit Mode HTML (手機版面修正: Time 移前且不壓縮, Label 移後可壓縮) ---
+            // --- Edit Mode HTML ---
             const editModeHtml = `
                 <div class="edit-mode hidden w-full p-4 bg-white">
                     <div class="flex gap-2 mb-3">
@@ -980,7 +1244,7 @@
                         <span class="text-xs">📮</span>
                         <input type="text" class="edit-address w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.address||''}" placeholder="輸入地址">
                     </div>
-                    <div class="mb-3"><label class="text-xs text-gray-400 block mb-1">計費幣別</label><select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white"><option value="${baseCurr}" ${act.currency !== 'TWD' ? 'selected' : ''}>${baseSymbol} ${baseCurr}</option><option value="TWD" ${act.currency === 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option></select></div>
+                    <div class="mb-3"><label class="text-xs text-gray-400 block mb-1">計費幣別</label><select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white"><option value="${baseCurr}" ${act.currency !== 'TWD' ? 'selected' : ''}>${baseSymbol} ${baseCurr}</option><option value="TWD" ${act.currency !== 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option></select></div>
                     <textarea class="edit-desc w-full text-sm text-sub resize-none h-20 border border-gray-200 rounded p-2 mb-3" placeholder="備註...">${act.desc||''}</textarea>
                     <div class="flex gap-2"><button onclick="saveActivity(${idx})" class="flex-1 py-2 bg-[var(--theme-color)] text-white text-xs rounded shadow font-bold">儲存修改</button><button onclick="toggleEditActivity(${idx})" class="px-4 py-2 bg-gray-100 text-gray-500 text-xs rounded shadow">取消</button></div>
                 </div>
@@ -1046,7 +1310,20 @@
                 ${editModeHtml}
             `;
             c.appendChild(el);
+            
+            // --- 2. 插入 Travel Mini-Card (非最後一項) ---
+            const isLastActivity = idx === activities.length - 1;
+            if (!isLastActivity) {
+                const nextAct = activities[idx + 1];
+                const travelMiniCard = renderTravelMiniCard(act, nextAct, idx, globalCardIndex);
+                c.appendChild(travelMiniCard);
+                globalCardIndex++; // 增加全局索引
+            }
         });
+        
+        // 2. 重新註冊 Intersection Observer
+        setupIntersectionObserver();
+        
         updateBudgetSummary();
     }
     
@@ -1128,7 +1405,7 @@
                 const deleted = tripData.days[dayKey].activities.splice(idx,1); 
                 
                 saveCurrentTrip();
-                renderTimeline(); 
+                renderTimeline(true); // 刪除後強制觸發 IO
                 updateBudgetSummary(); // 確保刪除後費用總結立即更新
 
                 if (deleted.length > 0) {
@@ -1228,7 +1505,7 @@
         // ------------------------------------
 
         saveCurrentTrip();
-        renderTimeline();
+        renderTimeline(true); // 儲存後重新渲染並觸發 IO
         showToast("活動已儲存並排序完成！");
     }
     
@@ -1241,20 +1518,12 @@
         tripData.days[`Day ${currentDay}`].activities.push({
             time:"12:00",icon:"📍",label:"SPOT",location:"新地點",address:"",desc:"",costType:"食",expenseDetail:"",
             splits:[{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: defaultCurrency }],
-            currency: defaultCurrency
+            currency: defaultCurrency,
+            travel: { mode: 'walk', duration: 0 } // NEW: 預設交通
         }); 
         saveCurrentTrip(); // 儲存新增的活動
-        renderTimeline(); // 重新渲染時間軸
+        renderTimeline(true); // 重新渲染時間軸並觸發 IO
         showToast("已新增活動節點");
-        
-        // 如果在非編輯模式下新增，需要手動滾動到新活動的位置
-        // if (!isEditMode) {
-        //     const newIndex = tripData.days[`Day ${currentDay}`].activities.length - 1;
-        //     setTimeout(() => {
-        //         const newCard = document.querySelector(`div[data-index="${newIndex}"]`);
-        //         if (newCard) newCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        //     }, 100);
-        // }
     }
     
     // 修正日期顯示問題：確保日期被正確格式化和顯示（年/月/日）
@@ -1280,22 +1549,71 @@
     }
     
     /* LISTS & EXPENSES LOGIC */
+    // 購物清單/行李清單項目渲染時，也加入滾動漸入動畫
     function renderListsPage() {
         const checkTab = document.getElementById('sub-tab-checklist');
         const shopTab = document.getElementById('sub-tab-shopping');
         const checkCont = document.getElementById('container-checklist');
         const shopCont = document.getElementById('container-shopping');
-        if (currentListTab === 'checklist') { checkTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-active text-sm'; shopTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-inactive text-sm'; checkCont.classList.remove('hidden'); shopCont.classList.add('hidden'); renderChecklist(); } 
-        else { checkTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-inactive text-sm'; shopTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-active text-sm'; checkCont.classList.add('hidden'); shopCont.classList.remove('hidden'); renderShopping(); }
+        
+        if (observer) observer.disconnect(); // 斷開 IO 連結
+
+        if (currentListTab === 'checklist') { 
+            checkTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-active text-sm'; 
+            shopTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-inactive text-sm'; 
+            checkCont.classList.remove('hidden'); 
+            shopCont.classList.add('hidden'); 
+            renderChecklist(); 
+        } 
+        else { 
+            checkTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-inactive text-sm'; 
+            shopTab.className = 'w-1/2 text-center py-2 rounded-lg transition-all cursor-pointer sub-tab-active text-sm'; 
+            checkCont.classList.add('hidden'); 
+            shopCont.classList.remove('hidden'); 
+            renderShopping(); 
+        }
     }
     function switchListSubTab(tab) { currentListTab = tab; renderListsPage(); }
-    function renderChecklist() { const container=document.getElementById('checklist-items'); container.innerHTML=''; tripData.checklist.forEach((item, idx)=>{ const el=document.createElement('div'); el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100"; el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleCheckItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateCheckItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteCheckItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; container.appendChild(el); }); }
+    
+    // 核心: 清單項目也加入滾動漸入動畫
+    function renderChecklist() { 
+        const container=document.getElementById('checklist-items'); 
+        container.innerHTML=''; 
+        let localIndex = 0;
+        tripData.checklist.forEach((item, idx)=>{ 
+            const el=document.createElement('div'); 
+            el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100 timeline-card"; /* 借用 timeline-card 樣式 */
+            el.dataset.globalIndex = localIndex++;
+            el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleCheckItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateCheckItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteCheckItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; 
+            container.appendChild(el); 
+            // 重新連接 IO
+            if (observer) observer.observe(el);
+        }); 
+        // 在 IO 斷開後，手動觸發一次顯示（如果不是第一次載入，避免重複設置 observer）
+        if (!isInitialLoad && observer) setupIntersectionObserver();
+    }
+    
     function applyChecklist(d) { if(window.confirm(`匯入 ${d} 天清單？`)){ CHECKLIST_PRESETS[d].forEach(p=>{if(!tripData.checklist.some(i=>i.text===p))tripData.checklist.push({text:p,checked:false})}); renderChecklist(); saveCurrentTrip(); showToast("已套用預設清單"); } }
     function addChecklistItem() { const inp=document.getElementById('new-item-input'); if(inp.value.trim()){ tripData.checklist.push({text:inp.value.trim(),checked:false}); inp.value=''; renderChecklist(); saveCurrentTrip(); showToast("已新增行李項目"); } }
     function toggleCheckItem(i){tripData.checklist[i].checked=!tripData.checklist[i].checked; renderChecklist(); saveCurrentTrip();}
     function updateCheckItem(i,v){tripData.checklist[i].text=v; saveCurrentTrip();}
     function deleteCheckItem(i){tripData.checklist.splice(i,1); renderChecklist(); saveCurrentTrip(); showToast("已刪除行李項目");}
-    function renderShopping() { const container=document.getElementById('shopping-items'); container.innerHTML=''; tripData.shoppingList.forEach((item, idx)=>{ const el=document.createElement('div'); el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100"; el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleShopItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateShopItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteShopItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; container.appendChild(el); }); }
+    
+    // 核心: 購物清單也加入滾動漸入動畫
+    function renderShopping() { 
+        const container=document.getElementById('shopping-items'); 
+        container.innerHTML=''; 
+        let localIndex = 0;
+        tripData.shoppingList.forEach((item, idx)=>{ 
+            const el=document.createElement('div'); 
+            el.className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-100 timeline-card"; /* 借用 timeline-card 樣式 */
+            el.dataset.globalIndex = localIndex++;
+            el.innerHTML=`<input type="checkbox" ${item.checked?'checked':''} onchange="toggleShopItem(${idx})" class="custom-checkbox"><input type="text" value="${item.text}" onchange="updateShopItem(${idx},this.value)" class="flex-1 text-sm ${item.checked?'line-through text-gray-400':'text-ink'} bg-transparent border-none p-0 focus:ring-0"><button onclick="deleteShopItem(${idx})" class="text-gray-300 hover:text-rose-400">✕</button>`; 
+            container.appendChild(el); 
+            if (observer) observer.observe(el);
+        }); 
+        if (!isInitialLoad && observer) setupIntersectionObserver();
+    }
     function addShoppingItem() { const inp=document.getElementById('new-shop-input'); if(inp.value.trim()){ tripData.shoppingList.push({text:inp.value.trim(),checked:false}); inp.value=''; renderShopping(); saveCurrentTrip(); showToast("已新增購物項目"); } }
     function toggleShopItem(i){tripData.shoppingList[i].checked=!tripData.shoppingList[i].checked; renderShopping(); saveCurrentTrip();}
     function updateShopItem(i,v){tripData.shoppingList[i].text=v; saveCurrentTrip();}
@@ -1434,6 +1752,7 @@
     }
     
     // Render Expense List with Drag Handles
+    // 核心: 費用列表也加入滾動漸入動畫
     function renderExpensesList() {
         const c = document.getElementById('expenses-list-container');
         c.innerHTML = '';
@@ -1441,6 +1760,12 @@
         const baseSymbol = CURRENCY_SYMBOLS[baseCurr] || baseCurr;
         const rate = tripData.exchangeRate || 0.215;
 
+        // 停止舊的觀察者
+        if (observer) {
+            observer.disconnect();
+        }
+
+        let localIndex = 0;
         tripData.expenses.forEach((exp, idx) => {
             const isTwd = exp.currency === 'TWD';
             const displaySymbol = isTwd ? 'NT$' : baseSymbol;
@@ -1460,8 +1785,10 @@
 
             const icon = getCategoryIcon(exp.category);
             const el = document.createElement('div');
-            el.className = "bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden drag-item group";
+            // 核心: 加入 timeline-card class，並手動設置延遲
+            el.className = "bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden drag-item group timeline-card";
             el.dataset.index = idx;
+            el.dataset.globalIndex = localIndex++;
 
             // Drag event bindings (same as itinerary)
             el.addEventListener('dragstart', handleSortableDragStart); 
@@ -1506,7 +1833,9 @@
                     <div class="flex gap-2"><button onclick="saveInlineExpense(${idx})" class="flex-1 py-2 bg-[var(--theme-color)] text-white text-xs rounded shadow">💾 儲存</button><button onclick="toggleEditExpense(${idx})" class="px-3 py-2 bg-gray-200 text-gray-600 text-xs rounded shadow">↩ 取消</button></div>
                 </div>`;
             c.appendChild(el);
+            if (observer) observer.observe(el);
         });
+        if (!isInitialLoad && observer) setupIntersectionObserver();
         updateBudgetSummary();
     }
     
@@ -1548,7 +1877,7 @@
                 const activities = tripData.days[`Day ${currentDay}`].activities;
                 const item = activities.splice(draggedItemIdx, 1)[0]; 
                 activities.splice(droppedIdx, 0, item); 
-                saveCurrentTrip(); renderTimeline(); 
+                saveCurrentTrip(); renderTimeline(true); 
             } 
         } 
         document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
@@ -1571,7 +1900,7 @@
             const item = activities.splice(draggedItemIdx, 1)[0];
             activities.splice(hoverIndex - (hoverIndex > draggedItemIdx ? 1 : 0), 0, item);
             draggedItemIdx = hoverIndex - (hoverIndex > draggedItemIdx ? 1 : 0);
-            saveCurrentTrip(); renderTimeline(); 
+            saveCurrentTrip(); renderTimeline(true); 
             const reRenderedItem = document.querySelector(`div[data-index="${draggedItemIdx}"]`);
             if (reRenderedItem) { touchTargetItem = reRenderedItem; touchTargetItem.classList.add('dragging'); }
         }
@@ -1888,7 +2217,8 @@
             let amt = finalTravelerBreakdown[p] || 0;
             let displayAmt = `${baseSymbol}${amt.toLocaleString()}`;
             const color = generateThemePalette(tripData.themeColor, idx, tripData.travelers.length);
-            breakdownEl.innerHTML += `<div class="flex items-center flex-shrink-0 bg-white rounded-full pr-3 py-1 border border-gray-100 shadow-sm"><div class="avatar-circle mr-2" style="width:32px;height:32px;font-size:12px;background-color:${color};border-color:${color}">${p.substring(0,1)}</div><span class="text-xs text-gray-700 font-bold">${displayAmt}</span></div>`;
+            // 核心：在 traveller breakdown 膠囊上也加入彈簧曲線
+            breakdownEl.innerHTML += `<div class="flex items-center flex-shrink-0 bg-white rounded-full pr-3 py-1 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.03]" style="transition-timing-function: var(--spring-curve);"><div class="avatar-circle mr-2" style="width:32px;height:32px;font-size:12px;background-color:${color};border-color:${color}">${p.substring(0,1)}</div><span class="text-xs text-gray-700 font-bold">${displayAmt}</span></div>`;
         });
         
         // --- Render Settlement Plan (Updated with New UI) ---
@@ -1899,6 +2229,7 @@
         if (settlements.length === 0) {
             settlementList.innerHTML = '<div class="text-center text-gray-400 text-xs py-4 bg-gray-50 rounded-xl">🎉 目前帳目平衡，無需轉帳</div>';
         } else {
+            settlementList.innerHTML = '';
             settlements.forEach(tx => {
                 const el = document.createElement('div');
                 el.className = 'flex items-center justify-between py-1 border-b border-gray-100 last:border-b-0';
@@ -1965,7 +2296,8 @@
                 const twd = Math.round(amt * rate);
                 let displayAmt = `${baseSymbol} ${amt.toLocaleString()}`;
                 const modeLabel = isPaymentMode ? "已支付" : "已消費";
-                l.innerHTML+=`<div class="flex justify-between items-center border-b border-gray-50 pb-4 last:border-0"><div class="flex items-center gap-3"><div class="avatar-circle" style="width:32px;height:32px;font-size:12px;background-color:${bgColors[i]};border-color:${bgColors[i]}">${n.substring(0,1)}</div><div><div class="text-base font-medium text-ink">${n}</div><div class="text-[10px] text-gray-400">${modeLabel}</div></div></div><div class="text-right"><div class="text-lg font-bold text-[var(--theme-color)]">${displayAmt}</div><div class="text-xs text-gray-400 font-bold">≈ NT$ ${twd.toLocaleString()} (${pct}%)</div></div></div>`;
+                // 核心：在 breakdown list item 上也加入彈簧效果
+                l.innerHTML+=`<div class="flex justify-between items-center border-b border-gray-50 pb-4 last:border-0 transition-all duration-300 hover:bg-gray-50 p-2 -mx-2 rounded"><div class="flex items-center gap-3"><div class="avatar-circle" style="width:32px;height:32px;font-size:12px;background-color:${bgColors[i]};border-color:${bgColors[i]}">${n.substring(0,1)}</div><div><div class="text-base font-medium text-ink">${n}</div><div class="text-[10px] text-gray-400">${modeLabel}</div></div></div><div class="text-right"><div class="text-lg font-bold text-[var(--theme-color)]">${displayAmt}</div><div class="text-xs text-gray-400 font-bold">≈ NT$ ${twd.toLocaleString()} (${pct}%)</div></div></div>`;
             });
         } 
 
@@ -2051,8 +2383,8 @@
                             detailMeta = `${item.date} • ${item.beneficiary} 消費`;
                         }
                     }
-
-                    html += `<div class="p-3 flex justify-between text-sm hover:bg-gray-50 transition"><div><div class="text-gray-800 font-medium">${item.name}</div>${item.detail ? `<div class="text-xs text-[var(--theme-color)] mt-1 block">${item.detail}</div>` : ''}<div class="text-xs text-gray-400 mt-1">${detailMeta}</div></div><div class="text-right"><div class="text-gray-600 font-serif font-bold">${itemAmtDisplay}</div><div class="text-[10px] text-gray-400">≈ NT$ ${itemTwd.toLocaleString()}</div></div></div>`;
+                    // 核心：在 detail item 上也加入平滑轉場
+                    html += `<div class="p-3 flex justify-between text-sm hover:bg-gray-50 transition duration-300"><div><div class="text-gray-800 font-medium">${item.name}</div>${item.detail ? `<div class="text-xs text-[var(--theme-color)] mt-1 block">${item.detail}</div>` : ''}<div class="text-xs text-gray-400 mt-1">${detailMeta}</div></div><div class="text-right"><div class="text-gray-600 font-serif font-bold">${itemAmtDisplay}</div><div class="text-[10px] text-gray-400">≈ NT$ ${itemTwd.toLocaleString()}</div></div></div>`;
                 });
                 html += `</div></div>`;
                 detailList.innerHTML += html;
