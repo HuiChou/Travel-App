@@ -128,7 +128,7 @@
         transform: translateY(0);
     }
 
-    /* 交通小卡樣式 */
+    /* 交通小卡樣式 (已刪除，但保留類名以防萬一，但無內容) */
     .timeline-travel-card {
         /* 使小卡片位於時間軸中心線 */
         margin-left: 20px; 
@@ -319,9 +319,29 @@
         <img id="hero-image" src="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Cover">
         <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white pt-4 px-6" id="header-content"></div>
         <div class="absolute top-3 right-3 md:top-4 md:right-4 flex flex-row gap-2 md:gap-3 z-50 scale-90 md:scale-100 origin-top-right">
+            
+            <button onclick="exportActivitiesToCsv()" class="float-btn" title="匯出完整行程為 CSV">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.25 2.25 0 003.375 4.5v15A2.25 2.25 0 005.625 21h12.75a2.25 2.25 0 002.25-2.25V15.5M16.5 16.5L12 21m0 0l-4.5-4.5M12 21V12" />
+                </svg>
+            </button>
+            
+            <label for="import-csv-file" class="float-btn cursor-pointer" title="匯入完整行程 CSV">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.25 2.25 0 003.375 4.5v15A2.25 2.25 0 005.625 21h12.75a2.25 2.25 0 002.25-2.25V15.5M12 9l-4.5 4.5M12 9l4.5 4.5M12 9V21" />
+                </svg>
+            </label>
+            <input type="file" id="import-csv-file" accept=".csv" class="hidden" onchange="importActivitiesFromCsv(event)">
+            
+            <button onclick="exportAllPdf()" class="float-btn" title="輸出 PDF">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+            </button>
+            
             <button onclick="toggleSettings()" class="float-btn" title="設定"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg></button>
             <button onclick="toggleContentEdit()" id="edit-content-btn" class="float-btn" title="編輯行程"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z" /></svg></button>
-            <button onclick="exportAllPdf()" class="float-btn" title="輸出 PDF"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg></button>
+            
             <button onclick="resetAllData()" class="float-btn float-btn-danger" title="重置版面 (清空所有資料)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg></button>
         </div>
       </header>
@@ -524,29 +544,19 @@
     let COLORS = ['#C6A664', '#E6DCC3', '#A88B4D', '#333333', '#8C8C8C', '#d1d5db', '#93c5fd', '#fca5a5'];
     const CAT_COLORS = { '食': '#fca5a5', '衣': '#fdba74', '住': '#fcd34d', '行': '#86efac', '育': '#93c5fd', '樂': '#c4b5fd', '購': '#f472b6', '雜': '#94a3b8' };
     
-    // NEW: 交通工具清單
-    const TRANSPORT_MODES = {
-        'walk': '🚶 步行',
-        'metro': '🚇 地鐵/電車',
-        'car': '🚗 計程車/自駕',
-        'bus': '🚌 公車/巴士',
-        'flight': '✈️ 飛機',
-        'boat': '🚢 船/渡輪',
-    };
-
-    // UPDATED TEMPLATE STRUCTURE
+    // UPDATED TEMPLATE STRUCTURE - 移除 travel 屬性
     const TEMPLATES = {
         departure: [ 
-            { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }], travel: { mode: 'car', duration: 30 } }, 
+            { time: "08:00", icon: "🏠", label: "START", location: "甜蜜的家", address:"", desc: "檢查護照", costType: "行", expenseDetail: "計程車", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] }, 
             { time: "10:30", icon: "✈️", label: "FLIGHT", location: "機場 T1", address:"", desc: "辦理登機", costType: "行", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] } 
         ],
         general: [ 
-            { time: "09:00", icon: "☕", label: "MORNING", location: "Blue Bottle", address:"京都市左京區南禪寺草川町64", desc: "晨間咖啡", costType: "食", expenseDetail: "拿鐵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'walk', duration: 15 } }, 
-            { time: "11:30", icon: "🍜", label: "LUNCH", location: "麵屋豬一", address:"京都市下京區恵美須之町542", desc: "必比登推薦", costType: "食", expenseDetail: "拉麵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'bus', duration: 25 } }, 
+            { time: "09:00", icon: "☕", label: "MORNING", location: "Blue Bottle", address:"京都市左京區南禪寺草川町64", desc: "晨間咖啡", costType: "食", expenseDetail: "拿鐵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
+            { time: "11:30", icon: "🍜", label: "LUNCH", location: "麵屋豬一", address:"京都市下京區恵美須之町542", desc: "必比登推薦", costType: "食", expenseDetail: "拉麵", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
             { time: "15:00", icon: "⛩️", label: "VISIT", location: "清水寺", address:"京都市東山區清水1丁目294", desc: "世界遺產", costType: "育", expenseDetail: "門票", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] } 
         ],
         return: [ 
-            { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }], travel: { mode: 'metro', duration: 40 } }, 
+            { time: "10:00", icon: "🎁", label: "BUY", location: "免稅店", address:"", desc: "最後衝刺", costType: "購", expenseDetail: "伴手禮", currency: "JPY", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'JPY' }] }, 
             { time: "16:00", icon: "🏠", label: "HOME", location: "返抵國門", address:"", desc: "平安回家", costType: "行", expenseDetail: "機捷", currency: "TWD", splits: [{ id: uuidv4(), beneficiary: '自己', payer: '自己', amount: 0, currency: 'TWD' }] } 
         ]
     };
@@ -999,9 +1009,9 @@
                         act.splits = JSON.parse(JSON.stringify(defaultSplit));
                     }
                     
-                    // NEW: Travel migration (ensure structure is present)
-                    if (!act.travel || typeof act.travel.mode === 'undefined') {
-                        act.travel = { mode: 'walk', duration: 0 };
+                    // 移除: Travel migration (ensure structure is present)
+                    if (act.travel) {
+                        delete act.travel;
                     }
                 });
                 
@@ -1010,8 +1020,8 @@
                 templ.forEach(t => { 
                     t.splits = JSON.parse(JSON.stringify(defaultSplit)); 
                     t.currency = t.currency || defaultCurrency;
-                    // NEW: Ensure travel field is initialized for new template activities
-                    if (!t.travel) t.travel = { mode: 'walk', duration: 0 };
+                    // 移除: Ensure travel field is initialized for new template activities
+                    if (t.travel) delete t.travel;
                 });
                 newDays[key] = { date: dateStr, location: "LOCATION", activities: templ }; 
             }
@@ -1056,7 +1066,8 @@
                 }
                 a.currency = a.currency || defaultCurrency;
                 if(a.payer) delete a.payer; 
-                if (!a.travel) a.travel = { mode: 'walk', duration: 0 }; // NEW: Travel field for templates
+                // 移除: Travel field for templates
+                if (a.travel) delete a.travel;
             });
             
             tripData.days[`Day ${currentDay}`].activities=templ; 
@@ -1066,101 +1077,6 @@
         } 
     }
     
-    // NEW: 渲染交通小卡 (已更新佈局和顏色)
-    function renderTravelMiniCard(currentAct, nextAct, actIndex, globalIndex) {
-        // Ensure travel object exists in the current activity
-        if (!currentAct.travel || typeof currentAct.travel.mode === 'undefined') {
-            currentAct.travel = { mode: 'walk', duration: 0 };
-        }
-        
-        const travel = currentAct.travel;
-        const fromLocation = currentAct.location;
-        const toLocation = nextAct.location;
-        const fromIcon = currentAct.icon; 
-        const toIcon = nextAct.icon; 
-        
-        // 獲取莫蘭迪背景
-        const bgColor = document.documentElement.style.getPropertyValue('--travel-bg-color') || '#FFFFFF';
-
-        let optionsHtml = '';
-        for (const key in TRANSPORT_MODES) {
-            optionsHtml += `<option value="${key}" ${travel.mode === key ? 'selected' : ''}>${TRANSPORT_MODES[key]}</option>`;
-        }
-        
-        const travelCard = document.createElement('div');
-        // 使用 relative, flex, justify-center 包裹
-        travelCard.className = 'relative flex justify-center pt-4 pb-2 my-2 timeline-travel-card';
-        
-        // 使用一個獨立的 div 作為動畫目標，並加入 timeline-card class
-        const animatableCard = document.createElement('div');
-        // 核心修改: 使用動態背景色
-        animatableCard.className = 'w-full max-w-xs p-3 rounded-2xl shadow-lg border border-gray-100 relative z-20 timeline-card';
-        animatableCard.style.backgroundColor = bgColor;
-        animatableCard.dataset.globalIndex = globalIndex;
-        
-        const nextTime = nextAct.time;
-
-        animatableCard.innerHTML = `
-            <div class="absolute w-1 h-full bg-gray-300 left-[-20px] top-0 z-10"></div> <!-- Timeline Connector -->
-
-            <div class="flex items-center justify-between gap-1">
-                <!-- 起點 (From) -->
-                <div class="flex flex-col text-xs text-gray-500 font-sans w-[35%] pr-1">
-                    <span class="font-bold text-ink text-[10px] whitespace-nowrap">從</span>
-                    <span class="truncate text-gray-700 font-bold flex items-center gap-0.5 text-sm leading-tight">
-                        ${fromIcon} <span class="truncate">${fromLocation || '出發地'}</span>
-                    </span>
-                </div>
-                
-                <!-- 交通工具 & 時間 (Middle) -->
-                <div class="flex flex-col items-center flex-1 min-w-0 -mt-1 space-y-1">
-                    <svg class="w-5 h-5 text-[var(--theme-color)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.726A8.995 8.995 0 0112 21c-2.73 0-5.132-1.11-6.879-2.899M12 3v18M12 3a9 9 0 00-5.342 1.658L12 3"/></svg>
-
-                    <!-- 核心修改: 交通工具整行顯示，分鐘數單獨一行 -->
-                    <select onchange="updateTravelInfo(${actIndex}, 'mode', this.value)" 
-                            class="text-[12px] font-bold text-center border-b border-gray-200 bg-transparent w-full cursor-pointer focus:border-[var(--theme-color)] pb-1 pt-0.5 outline-none font-sans" style="height: 24px;">
-                        ${optionsHtml}
-                    </select>
-
-                    <div class="flex items-center gap-1">
-                        <span class="text-[10px] text-gray-400">約</span>
-                        <input type="number" value="${travel.duration || 0}" 
-                               onchange="updateTravelInfo(${actIndex}, 'duration', this.value)" 
-                               class="w-8 text-sm font-bold text-center bg-transparent border-b border-gray-300 p-0 focus:border-[var(--theme-color)] outline-none" 
-                               placeholder="0">
-                        <span class="text-[10px] text-gray-400">分</span>
-                    </div>
-                </div>
-
-                <!-- 終點 (To) -->
-                <div class="flex flex-col text-xs text-gray-500 font-sans w-[35%] items-end pl-1">
-                    <span class="font-bold text-ink text-[10px] whitespace-nowrap">到</span>
-                    <span class="truncate text-gray-700 font-bold flex items-center justify-end gap-0.5 text-sm leading-tight">
-                        ${toIcon} <span class="truncate">${toLocation || '目的地'}</span>
-                    </span>
-                </div>
-            </div>
-            <p class="text-[10px] text-gray-400 text-center mt-2 border-t border-gray-50/50 pt-1">下一站 ${nextTime}</p>
-        `;
-        travelCard.appendChild(animatableCard);
-        return travelCard;
-    }
-
-    // NEW: 更新交通資訊
-    function updateTravelInfo(actIndex, field, value) {
-        const act = tripData.days[`Day ${currentDay}`].activities[actIndex];
-        if (!act.travel) act.travel = { mode: 'walk', duration: 0 };
-        
-        if (field === 'duration') {
-            act.travel.duration = parseInt(value) || 0;
-        } else {
-            act.travel[field] = value;
-        }
-        
-        saveCurrentTrip();
-        const modeText = TRANSPORT_MODES[act.travel.mode] || act.travel.mode;
-        showToast(`交通資訊已更新：${modeText} ${act.travel.duration} 分鐘`);
-    }
     
     // Render Timeline 
     // forceRenderAndObserve: 強制清除 in-view 狀態並重新註冊 IO
@@ -1177,7 +1093,7 @@
             observer.disconnect();
         }
         
-        // 1. 渲染活動卡片與交通小卡
+        // 1. 渲染活動卡片
         activities.forEach((act, idx) => {
             // --- 資料結構確保 ---
             if (!act.splits || !Array.isArray(act.splits) || act.splits.length === 0) {
@@ -1193,11 +1109,8 @@
             }
             if(act.payer) delete a.payer; 
             
-            // NEW: Travel field check/initialization
-            if (idx < activities.length - 1 && (!act.travel || typeof act.travel.mode === 'undefined')) {
-                 act.travel = { mode: 'walk', duration: 0 };
-            }
-            if (idx === activities.length - 1) { act.travel = null; } // 最後一項活動不需要 travel
+            // 移除: Travel field check/initialization
+            if (act.travel) delete act.travel;
             
             // --- 計算顯示金額 ---
             let totalCost = act.splits.reduce((sum, s) => sum + (s.amount || 0), 0);
@@ -1230,7 +1143,8 @@
                 initialClass = 'timeline-card';
             }
             
-            el.className=`relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item ${initialClass}`; 
+            // 核心修改: 移除 timeline-travel-card 類名
+            el.className=`relative flex flex-col md:flex-row overflow-hidden rounded-2xl shadow-sm border border-gray-100 group bg-white hover:shadow-md transition-all duration-300 ml-6 drag-item my-4 ${initialClass}`; 
             el.dataset.index = idx;
             el.dataset.globalIndex = globalCardIndex; // 設置全局索引
             globalCardIndex++; // 增加全局索引
@@ -1274,9 +1188,12 @@
                 </div>`;
             });
 
-            const addressHtml = act.address ? `<div class="flex items-start gap-2 mb-2 mt-2 text-xs text-gray-400 font-sans group/addr"><span class="flex-shrink-0 mt-0.5">📮</span><span class="truncate max-w-[200px] select-text">${act.address}</span><button onclick="copyAddress('${act.address}')" class="opacity-50 hover:opacity-100 hover:text-[var(--theme-color)] transition" title="複製地址">📋</button></div>` : '';
+            const addressHtml = act.address ? `<div class="flex items-start gap-2 mb-2 mt-2 text-xs text-gray-400 font-sans group/addr"><span class="flex-shrink-0 mt-0.5">📮</span><span class="truncate max-w-[200px] select-text">${act.address}</span><button onclick="copyText('${act.address}', '地址')" class="opacity-50 hover:opacity-100 hover:text-[var(--theme-color)] transition" title="複製地址">📋</button></div>` : '';
             const descHtml = act.desc ? `<div class="flex items-start gap-2 mb-3 mt-2 text-xs font-bold text-gray-500 font-sans select-text"><span class="flex-shrink-0 mt-0.5">📝</span><p class="whitespace-pre-wrap leading-relaxed">${act.desc}</p></div>` : '';
             const dragHandleHtml = `<div class="drag-handle-btn cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-[var(--theme-color)] flex items-center justify-center transition" title="拖曳排序" draggable="true"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg></div>`;
+            
+            // --- Email Copy Button ---
+            const emailBtnHtml = act.email ? `<button onclick="event.stopPropagation(); copyText('${act.email}', '信箱')" class="bg-gray-50 hover:bg-orange-50 text-gray-400 hover:text-orange-500 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" title="複製信箱">📧 信箱</button>` : '';
 
             // --- Edit Mode HTML ---
             const editModeHtml = `
@@ -1290,6 +1207,10 @@
                     <div class="flex gap-2 mb-2 bg-gray-50 p-2 rounded">
                         <span class="text-xs">📮</span>
                         <input type="text" class="edit-address w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.address||''}" placeholder="輸入地址">
+                    </div>
+                    <div class="flex gap-2 mb-2 bg-gray-50 p-2 rounded">
+                        <span class="text-xs">📧</span>
+                        <input type="text" class="edit-email w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.email||''}" placeholder="輸入相關信箱 (例如訂房/票券聯絡信箱)">
                     </div>
                     <div class="mb-3"><label class="text-xs text-gray-400 block mb-1">計費幣別</label><select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white"><option value="${baseCurr}" ${act.currency !== 'TWD' ? 'selected' : ''}>${baseSymbol} ${baseCurr}</option><option value="TWD" ${act.currency !== 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option></select></div>
                     <textarea class="edit-desc w-full text-sm text-sub resize-none h-20 border border-gray-200 rounded p-2 mb-3" placeholder="備註...">${act.desc||''}</textarea>
@@ -1316,6 +1237,7 @@
                         
                         <div class="flex gap-2 mt-auto pt-2">
                             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.address || act.location)}" target="_blank" class="bg-gray-50 hover:bg-sky-50 text-gray-400 hover:text-sky-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" onclick="event.stopPropagation()">🗺️ 導航</a>
+                            ${emailBtnHtml}
                             <button onclick="togglePanel(${idx})" class="bg-gray-50 hover:bg-[var(--theme-color)]/10 text-gray-400 hover:text-[var(--theme-color)] px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${isExpanded ? 'bg-[var(--theme-color)]/10 text-[var(--theme-color)]' : ''}">💴 ${isExpanded ? '收起' : '記帳'}</button>
                         </div>
                     </div>
@@ -1358,14 +1280,8 @@
             `;
             c.appendChild(el);
             
-            // --- 2. 插入 Travel Mini-Card (非最後一項) ---
-            const isLastActivity = idx === activities.length - 1;
-            if (!isLastActivity) {
-                const nextAct = activities[idx + 1];
-                const travelMiniCard = renderTravelMiniCard(act, nextAct, idx, globalCardIndex);
-                c.appendChild(travelMiniCard);
-                globalCardIndex++; // 增加全局索引
-            }
+            // 移除: 插入 Travel Mini-Card (非最後一項)
+            
         });
         
         // 2. 重新註冊 Intersection Observer
@@ -1522,6 +1438,16 @@
         if(view.classList.contains('hidden')) { view.classList.remove('hidden'); edit.classList.add('hidden'); } else { view.classList.add('hidden'); edit.classList.remove('hidden'); }
     }
 
+    // 輔助函式：按時間排序當前 Day 的活動
+    function sortCurrentDayActivities() {
+        const dayKey = `Day ${currentDay}`;
+        if (tripData.days[dayKey] && Array.isArray(tripData.days[dayKey].activities)) {
+            tripData.days[dayKey].activities.sort((a, b) => {
+                return (a.time || '00:00').localeCompare(b.time || '00:00');
+            });
+        }
+    }
+
     function saveActivity(idx) {
         const c = document.getElementById('timeline-container');
         const cardEl = c.querySelector(`div[data-index="${idx}"]`);
@@ -1531,6 +1457,7 @@
         const newLabel = cardEl.querySelector('.edit-label').value;
         const newLoc = cardEl.querySelector('.edit-location').value;
         const newAddr = cardEl.querySelector('.edit-address').value;
+        const newEmail = cardEl.querySelector('.edit-email').value; // Get Email
         const newDesc = cardEl.querySelector('.edit-desc').value;
         const newCurrency = cardEl.querySelector('.edit-currency').value;
 
@@ -1539,21 +1466,20 @@
         tripData.days[`Day ${currentDay}`].activities[idx].label = newLabel;
         tripData.days[`Day ${currentDay}`].activities[idx].location = newLoc;
         tripData.days[`Day ${currentDay}`].activities[idx].address = newAddr;
+        tripData.days[`Day ${currentDay}`].activities[idx].email = newEmail; // Save Email
         tripData.days[`Day ${currentDay}`].activities[idx].desc = newDesc;
         tripData.days[`Day ${currentDay}`].activities[idx].currency = newCurrency;
         
         // Update currency in all splits
         tripData.days[`Day ${currentDay}`].activities[idx].splits.forEach(s => s.currency = newCurrency);
 
-        // --- Sort activities by time ---
-        tripData.days[`Day ${currentDay}`].activities.sort((a, b) => {
-            return a.time.localeCompare(b.time);
-        });
+        // --- 核心修改: 儲存後立即排序 ---
+        sortCurrentDayActivities();
         // ------------------------------------
 
         saveCurrentTrip();
         renderTimeline(true); // 儲存後重新渲染並觸發 IO
-        showToast("活動已儲存並排序完成！");
+        showToast("活動已儲存並按時間排序完成！");
     }
     
     function getCategoryIcon(t) { const m={'食':'🍚','衣':'👕','住':'🏨','行':'🚆','育':'🎫','樂':'🎡','購':'🛍️','雜':'🔧'}; return m[t]||'💰'; }
@@ -1563,14 +1489,19 @@
         const defaultTraveler = tripData.travelers[0] || '自己';
         const defaultCurrency = tripData.baseCurrency || 'JPY';
         tripData.days[`Day ${currentDay}`].activities.push({
-            time:"12:00",icon:"📍",label:"SPOT",location:"新地點",address:"",desc:"",costType:"食",expenseDetail:"",
+            time:"12:00",icon:"📍",label:"SPOT",location:"新地點",address:"",email:"",desc:"",costType:"食",expenseDetail:"",
             splits:[{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: defaultCurrency }],
-            currency: defaultCurrency,
-            travel: { mode: 'walk', duration: 0 } // NEW: 預設交通
+            currency: defaultCurrency
+            // 移除: travel: { mode: 'walk', duration: 0 } 
         }); 
+        
+        // --- 核心修改: 新增後立即排序 ---
+        sortCurrentDayActivities();
+        // ------------------------------------
+
         saveCurrentTrip(); // 儲存新增的活動
         renderTimeline(true); // 重新渲染時間軸並觸發 IO
-        showToast("已新增活動節點");
+        showToast("已新增活動節點並按時間排序完成！");
     }
     
     // 修正日期顯示問題：確保日期被正確格式化和顯示（年/月/日）
@@ -1924,6 +1855,7 @@
                 const activities = tripData.days[`Day ${currentDay}`].activities;
                 const item = activities.splice(draggedItemIdx, 1)[0]; 
                 activities.splice(droppedIdx, 0, item); 
+                // 注意：這裡只執行拖曳換位，不執行時間排序
                 saveCurrentTrip(); renderTimeline(true); 
             } 
         } 
@@ -2343,7 +2275,7 @@
                 const twd = Math.round(amt * rate);
                 let displayAmt = `${baseSymbol} ${amt.toLocaleString()}`;
                 const modeLabel = isPaymentMode ? "已支付" : "已消費";
-                // 核心：在 breakdown list item 上也加入彈簧效果
+                // 核心：在 breakdown list item 膠囊上也加入彈簧效果
                 l.innerHTML+=`<div class="flex justify-between items-center border-b border-gray-50 pb-4 last:border-0 transition-all duration-300 hover:bg-gray-50 p-2 -mx-2 rounded"><div class="flex items-center gap-3"><div class="avatar-circle" style="width:32px;height:32px;font-size:12px;background-color:${bgColors[i]};border-color:${bgColors[i]}">${n.substring(0,1)}</div><div><div class="text-base font-medium text-ink">${n}</div><div class="text-[10px] text-gray-400">${modeLabel}</div></div></div><div class="text-right"><div class="text-lg font-bold text-[var(--theme-color)]">${displayAmt}</div><div class="text-xs text-gray-400 font-bold">≈ NT$ ${twd.toLocaleString()} (${pct}%)</div></div></div>`;
             });
         } 
@@ -2446,8 +2378,466 @@
         }).catch(err => { console.error('Copy failed', err); window.alert('複製失敗，請手動複製'); });
     }
 
+    // 通用複製文字函式
+    function copyText(text, label) {
+        if(!text) return;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(`已複製${label}：${text}`);
+        }).catch(err => { console.error('Copy failed', err); window.alert('複製失敗，請手動複製'); });
+    }
+    
+    // --- 恢復 PDF 匯出函式 ---
+    // (需要外部函式庫 html2canvas 和 jspdf.umd.min.js)
+    async function exportAllPdf() {
+        if (!currentProjectId) {
+            showToast("請先選擇一個旅程。");
+            return;
+        }
+
+        const tempContainer = document.getElementById('pdf-temp-container');
+        const originalContent = document.getElementById('screen-itinerary').cloneNode(true);
+        const headerContent = originalContent.querySelector('#header-content').cloneNode(true);
+
+        // 移除不必要的元素以優化 PDF 內容
+        const excludedSelectors = [
+            '.sticky-header', 
+            '.float-btn', 
+            '#template-actions', 
+            '#quick-add-act-btn', 
+            '.drag-handle-btn',
+            '.expense-panel-responsive',
+            '.card-actions', 
+            '.timeline-dot',
+            // 隱藏行程編輯器，只保留內容
+            '.edit-mode' 
+        ];
+
+        // 移除所有控制項
+        excludedSelectors.forEach(selector => {
+            originalContent.querySelectorAll(selector).forEach(el => el.remove());
+        });
+        
+        // 顯示所有原本被隱藏的 view-mode 內容（理論上 edit-mode 已經被移除了）
+        originalContent.querySelectorAll('.view-mode.hidden').forEach(el => el.classList.remove('hidden'));
+
+
+        // 提取並格式化活動列表
+        let timelineHtml = `<div class="pdf-timeline-container space-y-6">`;
+        const activities = tripData.days[`Day ${currentDay}`]?.activities || [];
+
+        activities.forEach((act, idx) => {
+            const expensePanel = `<div class="text-xs mt-2 text-gray-600 font-sans">💰 費用: ${act.costType} / ${act.currency} ${act.splits.reduce((sum, s) => sum + (s.amount || 0), 0).toLocaleString()}</div>`;
+            
+            timelineHtml += `
+                <div class="relative pl-6">
+                    <div class="absolute w-1 h-full bg-gray-200 left-0 top-0"></div>
+                    <div class="absolute left-[-4px] top-[4px] w-3 h-3 bg-white border border-[var(--theme-color)] rounded-full z-10"></div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="text-xs font-sans text-gray-400 tracking-widest">${act.time}</span>
+                            <span class="text-[10px] text-[var(--theme-color)] font-bold tracking-[0.2em] uppercase font-sans bg-[var(--theme-color)]/5 px-2 py-0.5 rounded">${act.label||'VISIT'}</span>
+                        </div>
+                        <h3 class="text-lg font-serif font-bold text-ink leading-tight">${act.icon} ${act.location}</h3>
+                        ${act.address ? `<div class="text-xs text-gray-500 mt-1">📮 ${act.address}</div>` : ''}
+                        ${act.desc ? `<div class="text-sm text-gray-700 mt-2 whitespace-pre-wrap">${act.desc}</div>` : ''}
+                        ${expensePanel}
+                    </div>
+                </div>
+            `;
+        });
+
+        timelineHtml += `</div>`;
+
+        // 整理 PDF 內容
+        tempContainer.innerHTML = `
+            <div class="p-8">
+                <h1 class="text-3xl font-bold text-center text-[var(--theme-color)] mb-1 font-serif">${tripData.theme}</h1>
+                <p class="text-center text-sm text-gray-500 mb-8 font-sans">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>
+                <h2 class="text-2xl font-bold text-ink mb-4 font-serif">Day ${currentDay} (${tripData.days[`Day ${currentDay}`].date})</h2>
+                ${timelineHtml}
+            </div>
+        `;
+
+        tempContainer.style.display = 'block';
+
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const margin = 10;
+        const width = 190;
+        const totalHeight = pdf.internal.pageSize.getHeight();
+        let y = margin;
+
+        const captureElement = tempContainer.firstElementChild;
+        
+        // 使用 html2canvas 擷取內容
+        const canvas = await html2canvas(captureElement, {
+            scale: 2,
+            logging: false,
+            useCORS: true
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const imgHeight = (canvas.height * width) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'JPEG', margin, y, width, imgHeight);
+        heightLeft -= totalHeight - margin;
+
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight + margin;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', margin, position, width, imgHeight);
+            heightLeft -= totalHeight;
+        }
+
+        pdf.save(`${tripData.theme}_Day${currentDay}.pdf`);
+
+        // 清理
+        tempContainer.style.display = 'none';
+        tempContainer.innerHTML = '';
+        showToast("PDF 匯出完成！");
+    }
+    // --- 結束 PDF 匯出函式 ---
+
+    /* --- 新增的 CSV 匯出/匯入邏輯 (更新為多段式結構) --- */
+
+    const ACTIVITY_HEADERS_MAP = {
+        "time": "時間", 
+        "icon": "圖示", 
+        "label": "標籤", 
+        "location": "地點", 
+        "address": "地址", 
+        "email": "信箱", 
+        "desc": "備註(支援換行)", 
+        "costType": "類別",
+        "expenseDetail": "費用細項",
+        "currency": "幣別",
+        "splits_json": "分帳結構(JSON)"
+    };
+    const META_HEADERS_MAP = {
+        "theme": "旅行名稱",
+        "startDate": "開始日期",
+        "endDate": "結束日期",
+        "exchangeRate": "匯率(外幣換台幣)",
+        "baseCurrency": "外幣代碼",
+        "travelers": "旅伴(逗號分隔)",
+        "themeColor": "主題色(#HEX)"
+    };
+
+    const META_KEYS = Object.keys(META_HEADERS_MAP);
+    const ACTIVITY_KEYS = Object.keys(ACTIVITY_HEADERS_MAP);
+
+    // 匯出**完整**行程到 CSV (包含元數據)
+    function exportActivitiesToCsv() {
+        if (!currentProjectId) {
+            showToast("請先選擇一個旅程。");
+            return;
+        }
+
+        let csvContent = "Key,Attribute,Value\n"; // 固定的三欄標頭
+
+        // 1. 寫入元數據 (META)
+        META_KEYS.forEach(key => {
+            let value = tripData[key] || '';
+            
+            // 特殊處理 travelers 陣列為逗號分隔字串
+            if (key === 'travelers' && Array.isArray(value)) {
+                value = value.join(',');
+            }
+
+            // 處理 CSV 轉義
+            if (typeof value === 'string') {
+                 value = value.replace(/"/g, '""');
+            }
+
+            // [META],Attribute,Value
+            csvContent += `"[META]","${META_HEADERS_MAP[key]}","${value}"\n`;
+        });
+        
+        // 2. 寫入活動數據 (ACTIVITY)
+        
+        // 寫入活動部分的標頭
+        csvContent += `"[ACTIVITY]","Day/Index",`;
+        csvContent += ACTIVITY_KEYS.map(key => `"${ACTIVITY_HEADERS_MAP[key]}"`).join(',');
+        csvContent += `\n`;
+        
+        // 寫入每個 Day 的活動
+        Object.entries(tripData.days).forEach(([dayKey, dayData]) => {
+            const dayIndex = dayKey.replace('Day ', '');
+            dayData.activities.forEach((act, actIndex) => {
+                
+                let row = `"[ACTIVITY]","${dayIndex}-${actIndex}",`;
+
+                const values = ACTIVITY_KEYS.map(key => {
+                    let value;
+                    if (key === 'splits_json') {
+                        // 將 splits 結構轉換為 JSON 字串
+                        value = JSON.stringify(act.splits || []);
+                    } else {
+                        value = act[key] || '';
+                    }
+
+                    // 處理 CSV 轉義（雙引號和換行）
+                    if (typeof value === 'string') {
+                        value = value.replace(/"/g, '""').replace(/\n/g, '\\n'); // 換行替換為 \n 標記
+                    }
+
+                    return `"${value}"`;
+                }).join(',');
+
+                row += values + '\n';
+                csvContent += row;
+            });
+        });
+
+        // 創建 Blob 並下載
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${tripData.theme}_FullTrip_Export.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`已成功匯出完整行程到 CSV。`);
+    }
+
+    // 從 CSV 匯入**完整**行程 (包含元數據)
+    function importActivitiesFromCsv(event) {
+        if (!currentProjectId) {
+            showToast("請先選擇一個旅程。");
+            return;
+        }
+
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            try {
+                const { metaData, activitiesByDay } = parseMultiSectionCsv(text);
+
+                // 1. 更新元數據 (Meta Data)
+                let metaUpdated = false;
+                if (Object.keys(metaData).length > 0) {
+                     if (window.confirm("偵測到新的旅行設定，是否要覆蓋當前設定（名稱、日期、匯率、旅伴）？")) {
+                        // 確保將中文字段映射回 tripData 的英文 key
+                        Object.entries(metaData).forEach(([attrZh, value]) => {
+                            const key = Object.keys(META_HEADERS_MAP).find(k => META_HEADERS_MAP[k] === attrZh);
+                            if (key) {
+                                if (key === 'travelers' && typeof value === 'string') {
+                                    tripData.travelers = value.split(',').map(t => t.trim()).filter(t => t);
+                                } else if (key === 'exchangeRate') {
+                                    tripData.exchangeRate = parseFloat(value) || 0.0;
+                                } else if (key === 'startDate' || key === 'endDate') {
+                                    tripData[key] = value.trim(); // 日期保留字串格式
+                                } else {
+                                    tripData[key] = value;
+                                }
+                                metaUpdated = true;
+                            }
+                        });
+                        if (metaUpdated) {
+                            // 重新計算 Day 結構和應用主題
+                            updateDateRange();
+                            applyTheme();
+                            renderHeader();
+                            renderDayTabs();
+                        }
+                    }
+                }
+                
+                // 2. 替換/新增活動數據 (Activity Data)
+                if (Object.keys(activitiesByDay).length > 0) {
+                     if (window.confirm("偵測到新的行程活動，是否要替換當前旅行所有 Day 的行程活動？")) {
+                        // 重設所有 Day 的活動
+                        const newDaysStructure = {};
+                        
+                        Object.entries(tripData.days).forEach(([dayKey, dayObj]) => {
+                            const dayIndex = dayKey.replace('Day ', '');
+                            
+                            // 使用 CSV 中的新活動，否則保留 Day 的日期和位置，但清空活動
+                            const newActivities = activitiesByDay[dayIndex] || [];
+                            
+                            newDaysStructure[dayKey] = {
+                                date: dayObj.date,
+                                location: dayObj.location,
+                                activities: newActivities
+                            };
+                        });
+                        
+                        tripData.days = newDaysStructure;
+                    } else if (window.confirm("是否要將這些活動【追加】到當前行程的活動列表末尾？")) {
+                        
+                        // 追加入口（僅追加到對應 Day 的活動列表）
+                         Object.entries(activitiesByDay).forEach(([dayIndex, newActs]) => {
+                            const dayKey = `Day ${dayIndex}`;
+                            
+                            if (tripData.days[dayKey]) {
+                                // 追加入新的活動
+                                tripData.days[dayKey].activities.push(...newActs);
+                                
+                                // 追加入後立即排序
+                                sortCurrentDayActivities();
+                            } else {
+                                // 如果 Day 不存在 (可能 CSV 包含了行程日期之外的 Day)，則忽略
+                                console.warn(`Day ${dayIndex} 不存在於當前行程範圍內，跳過匯入。`);
+                            }
+                        });
+                    }
+                }
+
+                // 儲存並重新渲染
+                saveCurrentTrip();
+                renderTimeline(true);
+                updateBudgetSummary();
+                showToast(`匯入完成！設定${metaUpdated ? '已更新' : '未變更'}，活動已替換/追加。`);
+
+            } catch (error) {
+                console.error("CSV 匯入失敗:", error);
+                showToast(`CSV 匯入失敗，請檢查檔案結構。(${error.message})`);
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+        // 清除檔案 input 的值，以便下次能觸發 onchange 事件
+        event.target.value = null; 
+    }
+
+    // 核心多段式 CSV 解析邏輯
+    function parseMultiSectionCsv(csvText) {
+        if (csvText.charCodeAt(0) === 0xFEFF) {
+            csvText = csvText.substring(1);
+        }
+        
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) return { metaData: {}, activitiesByDay: {} };
+
+        // 簡易 CSV 解析函式 (從單欄位模式調整)
+        const parseRow = (line) => {
+            const result = [];
+            let inQuotes = false;
+            let currentField = '';
+            // 由於採用固定三欄模式，我們可以放鬆對逗號的檢查，但保留對引號和轉義的處理
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    if (i + 1 < line.length && line[i + 1] === '"') {
+                        currentField += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(currentField);
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            result.push(currentField);
+            
+            return result.map(f => {
+                let trimmed = f.trim();
+                // 移除前後引號，並清理轉義的換行符
+                if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+                    trimmed = trimmed.substring(1, trimmed.length - 1);
+                }
+                return trimmed.replace(/""/g, '"').replace(/\\n/g, '\n').trim();
+            });
+        };
+        
+        let metaData = {};
+        let activitiesByDay = {};
+        let currentSection = null;
+        let activityHeaders = null;
+        const defaultTraveler = tripData.travelers[0] || '自己';
+        const defaultCurrency = tripData.baseCurrency || 'JPY';
+
+
+        for (let i = 1; i < lines.length; i++) {
+            const rowValues = parseRow(lines[i]);
+            const key = rowValues[0] ? rowValues[0].toUpperCase() : null;
+
+            if (key === '[META]' && rowValues.length >= 3) {
+                // META: Key, Attribute, Value
+                const attributeZh = rowValues[1];
+                const value = rowValues[2];
+                metaData[attributeZh] = value;
+                currentSection = 'META';
+                continue;
+            } 
+            
+            if (key === '[ACTIVITY]') {
+                if (rowValues.length > 3 && rowValues[1] === 'Day/Index') {
+                    // 這是活動的標頭行: [ACTIVITY],Day/Index,time,icon,...
+                    activityHeaders = rowValues.slice(2).map(h => {
+                         return Object.keys(ACTIVITY_HEADERS_MAP).find(k => ACTIVITY_HEADERS_MAP[k] === h) || h;
+                    });
+                    currentSection = 'ACTIVITY';
+                    continue;
+                }
+                
+                if (currentSection === 'ACTIVITY' && activityHeaders && rowValues.length >= activityHeaders.length + 2) {
+                    // 這是活動數據行
+                    const dayIndex = rowValues[1] ? rowValues[1].split('-')[0] : '1'; // 假設 Day/Index 是 "1-0"
+                    
+                    let newAct = {};
+                    let splitsJson = null;
+                    const dataValues = rowValues.slice(2);
+                    
+                    activityHeaders.forEach((headerKey, index) => {
+                        const value = dataValues[index] || '';
+                        if (headerKey === 'splits_json') {
+                            splitsJson = value;
+                        } else {
+                            newAct[headerKey] = value;
+                        }
+                    });
+                    
+                    // 處理 Splits 結構
+                    newAct.splits = [];
+                    if (splitsJson) {
+                        try {
+                            const parsedSplits = JSON.parse(splitsJson);
+                            if (Array.isArray(parsedSplits)) {
+                                newAct.splits = parsedSplits.map(s => ({
+                                    id: uuidv4(), 
+                                    beneficiary: s.beneficiary || defaultTraveler,
+                                    payer: s.payer || defaultTraveler,
+                                    amount: parseInt(s.amount) || 0,
+                                    currency: s.currency || newAct.currency || defaultCurrency
+                                }));
+                            }
+                        } catch (e) {
+                            console.error(`解析 Day ${dayIndex} 的 splits_json 失敗:`, e);
+                        }
+                    }
+                    
+                    // 確保基本結構
+                    if (newAct.splits.length === 0) {
+                         newAct.splits = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: newAct.currency || defaultCurrency }];
+                    }
+                    
+                    newAct.icon = newAct.icon || '📍';
+                    newAct.time = newAct.time || '12:00';
+                    newAct.costType = newAct.costType || '雜';
+
+                    if (!activitiesByDay[dayIndex]) {
+                        activitiesByDay[dayIndex] = [];
+                    }
+                    activitiesByDay[dayIndex].push(newAct);
+                }
+            }
+            // 忽略無法識別或格式錯誤的行
+        }
+
+        return { metaData, activitiesByDay };
+    }
+
+    /* --- 結束 CSV 匯出/匯入邏輯 --- */
+
     window.onload = init;
   </script>
 </body>
 </html>
-
