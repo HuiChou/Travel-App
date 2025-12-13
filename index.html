@@ -12,6 +12,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- NEW: Add SheetJS (xlsx) for Excel export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
+  
   <script>
     tailwind.config = {
       theme: {
@@ -320,12 +323,15 @@
         <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white pt-4 px-6" id="header-content"></div>
         <div class="absolute top-3 right-3 md:top-4 md:right-4 flex flex-row gap-2 md:gap-3 z-50 scale-90 md:scale-100 origin-top-right">
             
-            <button onclick="exportActivitiesToCsv()" class="float-btn" title="匯出完整行程為 CSV">
+            <!-- MODIFIED: Change CSV export to Excel export -->
+            <button onclick="exportAllToExcel()" class="float-btn" title="匯出所有資料為 Excel (.xlsx)">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.25 2.25 0 003.375 4.5v15A2.25 2.25 0 005.625 21h12.75a2.25 2.25 0 002.25-2.25V15.5M16.5 16.5L12 21m0 0l-4.5-4.5M12 21V12" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.5A2.25 2.25 0 005.25 15h13.5A2.25 2.25 0 0021 13.5V5.25A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25v8.25zm6 0h.008v.008H9v-.008zM12 13.5h.008v.008H12v-.008zM15 13.5h.008v.008H15v-.008zM18 13.5h.008v.008H18v-.008z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 18.75V15h18v3.75A2.25 2.25 0 0118.75 21H5.25A2.25 2.25 0 013 18.75zm6 0h.008v.008H9v-.008zM12 18.75h.008v.008H12v-.008zM15 18.75h.008v.008H15v-.008zM18 18.75h.008v.008H18v-.008z" />
                 </svg>
             </button>
             
+            <!-- Retain CSV import functionality for complex structure -->
             <label for="import-csv-file" class="float-btn cursor-pointer" title="匯入完整行程 CSV">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.25 2.25 0 003.375 4.5v15A2.25 2.25 0 005.625 21h12.75a2.25 2.25 0 002.25-2.25V15.5M12 9l-4.5 4.5M12 9l4.5 4.5M12 9V21" />
@@ -2011,9 +2017,9 @@
         });
         
         // For Settlement Calculation
-        let netBalances = {}; // { Person: +Credit/-Debt }
+        window.netBalances = {}; // Globalize for export
         tripData.travelers.forEach(t => { 
-            netBalances[t] = 0;
+            window.netBalances[t] = 0;
             window.payerBreakdown[t] = 0;
             window.consumptionBreakdown[t] = 0;
             window.personCategoryBreakdown[t] = {}; 
@@ -2049,7 +2055,7 @@
                         // 1. 付款模式清單 (Payment List Logic)
                         // 無論 beneficiaries 是誰，只要是這個 payer 付的錢，就加總進去。不拆分。
                         window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
-                        netBalances[payer] = (netBalances[payer] || 0) + normalizedVal;
+                        window.netBalances[payer] = (window.netBalances[payer] || 0) + normalizedVal;
                         
                         window.categoryListPayment[type].total += normalizedVal;
                         window.categoryListPayment[type].items.push({ 
@@ -2070,7 +2076,7 @@
                                 // Consumption Stats
                                 window.consumptionBreakdown[t] = (window.consumptionBreakdown[t]||0) + splitAmount;
                                 window.personCategoryBreakdown[t][type] = (window.personCategoryBreakdown[t][type] || 0) + splitAmount;
-                                netBalances[t] = (netBalances[t] || 0) - splitAmount;
+                                window.netBalances[t] = (window.netBalances[t] || 0) - splitAmount;
 
                                 // Add INDIVIDUAL split item to Consumption List
                                 window.categoryListConsumption[type].total += splitAmount;
@@ -2090,7 +2096,7 @@
                             // Standard 1-to-1
                             window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
                             window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
-                            netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
+                            window.netBalances[beneficiary] = (window.netBalances[beneficiary] || 0) - normalizedVal;
 
                             window.categoryListConsumption[type].total += normalizedVal;
                             window.categoryListConsumption[type].items.push({ 
@@ -2124,7 +2130,7 @@
 
                 // 1. 付款模式清單 (Payment List Logic)
                 window.payerBreakdown[payer] = (window.payerBreakdown[payer]||0) + normalizedVal;
-                netBalances[payer] = (netBalances[payer] || 0) + normalizedVal;
+                window.netBalances[payer] = (window.netBalances[payer] || 0) + normalizedVal;
 
                 window.categoryListPayment[type].total += normalizedVal;
                 window.categoryListPayment[type].items.push({ 
@@ -2144,7 +2150,7 @@
                     tripData.travelers.forEach(t => {
                         window.consumptionBreakdown[t] = (window.consumptionBreakdown[t]||0) + splitAmount;
                         window.personCategoryBreakdown[t][type] = (window.personCategoryBreakdown[t][type] || 0) + splitAmount;
-                        netBalances[t] = (netBalances[t] || 0) - splitAmount;
+                        window.netBalances[t] = (window.netBalances[t] || 0) - splitAmount;
 
                         window.categoryListConsumption[type].total += splitAmount;
                         window.categoryListConsumption[type].items.push({ 
@@ -2162,7 +2168,7 @@
                 } else {
                     window.consumptionBreakdown[beneficiary] = (window.consumptionBreakdown[beneficiary]||0) + normalizedVal;
                     window.personCategoryBreakdown[beneficiary][type] = (window.personCategoryBreakdown[beneficiary][type] || 0) + normalizedVal;
-                    netBalances[beneficiary] = (netBalances[beneficiary] || 0) - normalizedVal;
+                    window.netBalances[beneficiary] = (window.netBalances[beneficiary] || 0) - normalizedVal;
 
                     window.categoryListConsumption[type].total += normalizedVal;
                     window.categoryListConsumption[type].items.push({ 
@@ -2203,7 +2209,8 @@
         // --- Render Settlement Plan (Updated with New UI) ---
         const settlementList = document.getElementById('settlement-list');
         settlementList.innerHTML = '';
-        const settlements = calculateSettlements(netBalances, rate, baseSymbol);
+        const settlements = calculateSettlements(window.netBalances, rate, baseSymbol);
+        window.calculatedSettlements = settlements; // Globalize for export
         
         if (settlements.length === 0) {
             settlementList.innerHTML = '<div class="text-center text-gray-400 text-xs py-4 bg-gray-50 rounded-xl">🎉 目前帳目平衡，無需轉帳</div>';
@@ -2498,110 +2505,8 @@
         showToast("PDF 匯出完成！");
     }
     // --- 結束 PDF 匯出函式 ---
-
-    /* --- 新增的 CSV 匯出/匯入邏輯 (更新為多段式結構) --- */
-
-    const ACTIVITY_HEADERS_MAP = {
-        "time": "時間", 
-        "icon": "圖示", 
-        "label": "標籤", 
-        "location": "地點", 
-        "address": "地址", 
-        "email": "信箱", 
-        "desc": "備註(支援換行)", 
-        "costType": "類別",
-        "expenseDetail": "費用細項",
-        "currency": "幣別",
-        "splits_json": "分帳結構(JSON)"
-    };
-    const META_HEADERS_MAP = {
-        "theme": "旅行名稱",
-        "startDate": "開始日期",
-        "endDate": "結束日期",
-        "exchangeRate": "匯率(外幣換台幣)",
-        "baseCurrency": "外幣代碼",
-        "travelers": "旅伴(逗號分隔)",
-        "themeColor": "主題色(#HEX)"
-    };
-
-    const META_KEYS = Object.keys(META_HEADERS_MAP);
-    const ACTIVITY_KEYS = Object.keys(ACTIVITY_HEADERS_MAP);
-
-    // 匯出**完整**行程到 CSV (包含元數據)
-    function exportActivitiesToCsv() {
-        if (!currentProjectId) {
-            showToast("請先選擇一個旅程。");
-            return;
-        }
-
-        let csvContent = "Key,Attribute,Value\n"; // 固定的三欄標頭
-
-        // 1. 寫入元數據 (META)
-        META_KEYS.forEach(key => {
-            let value = tripData[key] || '';
-            
-            // 特殊處理 travelers 陣列為逗號分隔字串
-            if (key === 'travelers' && Array.isArray(value)) {
-                value = value.join(',');
-            }
-
-            // 處理 CSV 轉義
-            if (typeof value === 'string') {
-                 value = value.replace(/"/g, '""');
-            }
-
-            // [META],Attribute,Value
-            csvContent += `"[META]","${META_HEADERS_MAP[key]}","${value}"\n`;
-        });
-        
-        // 2. 寫入活動數據 (ACTIVITY)
-        
-        // 寫入活動部分的標頭
-        csvContent += `"[ACTIVITY]","Day/Index",`;
-        csvContent += ACTIVITY_KEYS.map(key => `"${ACTIVITY_HEADERS_MAP[key]}"`).join(',');
-        csvContent += `\n`;
-        
-        // 寫入每個 Day 的活動
-        Object.entries(tripData.days).forEach(([dayKey, dayData]) => {
-            const dayIndex = dayKey.replace('Day ', '');
-            dayData.activities.forEach((act, actIndex) => {
-                
-                let row = `"[ACTIVITY]","${dayIndex}-${actIndex}",`;
-
-                const values = ACTIVITY_KEYS.map(key => {
-                    let value;
-                    if (key === 'splits_json') {
-                        // 將 splits 結構轉換為 JSON 字串
-                        value = JSON.stringify(act.splits || []);
-                    } else {
-                        value = act[key] || '';
-                    }
-
-                    // 處理 CSV 轉義（雙引號和換行）
-                    if (typeof value === 'string') {
-                        value = value.replace(/"/g, '""').replace(/\n/g, '\\n'); // 換行替換為 \n 標記
-                    }
-
-                    return `"${value}"`;
-                }).join(',');
-
-                row += values + '\n';
-                csvContent += row;
-            });
-        });
-
-        // 創建 Blob 並下載
-        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${tripData.theme}_FullTrip_Export.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast(`已成功匯出完整行程到 CSV。`);
-    }
-
+    
+    // --- 費用匯入邏輯 (保留原 CSV 邏輯，名稱不變) ---
     // 從 CSV 匯入**完整**行程 (包含元數據)
     function importActivitiesFromCsv(event) {
         if (!currentProjectId) {
@@ -2623,6 +2528,16 @@
                 if (Object.keys(metaData).length > 0) {
                      if (window.confirm("偵測到新的旅行設定，是否要覆蓋當前設定（名稱、日期、匯率、旅伴）？")) {
                         // 確保將中文字段映射回 tripData 的英文 key
+                        const META_HEADERS_MAP = {
+                            "theme": "旅行名稱",
+                            "startDate": "開始日期",
+                            "endDate": "結束日期",
+                            "exchangeRate": "匯率(外幣換台幣)",
+                            "baseCurrency": "外幣代碼",
+                            "travelers": "旅伴(逗號分隔)",
+                            "themeColor": "主題色(#HEX)"
+                        };
+                        
                         Object.entries(metaData).forEach(([attrZh, value]) => {
                             const key = Object.keys(META_HEADERS_MAP).find(k => META_HEADERS_MAP[k] === attrZh);
                             if (key) {
@@ -2743,6 +2658,7 @@
                 if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
                     trimmed = trimmed.substring(1, trimmed.length - 1);
                 }
+                // 這邊我們假設匯入的 CSV 換行符是 \n 標記，並轉回來
                 return trimmed.replace(/""/g, '"').replace(/\\n/g, '\n').trim();
             });
         };
@@ -2753,6 +2669,21 @@
         let activityHeaders = null;
         const defaultTraveler = tripData.travelers[0] || '自己';
         const defaultCurrency = tripData.baseCurrency || 'JPY';
+
+        // 必須定義這個 Map 來正確解析匯入的 CSV 欄位名稱
+        const ACTIVITY_HEADERS_MAP_REVERSE = {
+            "時間": "time", 
+            "圖示": "icon", 
+            "標籤": "label", 
+            "地點": "location", 
+            "地址": "address", 
+            "信箱": "email", 
+            "備註(支援換行)": "desc", 
+            "類別": "costType",
+            "費用細項": "expenseDetail",
+            "幣別": "currency",
+            "分帳結構(JSON)": "splits_json"
+        };
 
 
         for (let i = 1; i < lines.length; i++) {
@@ -2770,9 +2701,10 @@
             
             if (key === '[ACTIVITY]') {
                 if (rowValues.length > 3 && rowValues[1] === 'Day/Index') {
-                    // 這是活動的標頭行: [ACTIVITY],Day/Index,time,icon,...
+                    // 這是活動的標頭行: [ACTIVITY],Day/Index,時間,圖示,...
                     activityHeaders = rowValues.slice(2).map(h => {
-                         return Object.keys(ACTIVITY_HEADERS_MAP).find(k => ACTIVITY_HEADERS_MAP[k] === h) || h;
+                         // 確保將中文標頭轉換為英文 key
+                         return ACTIVITY_HEADERS_MAP_REVERSE[h] || h; 
                     });
                     currentSection = 'ACTIVITY';
                     continue;
@@ -2834,10 +2766,240 @@
 
         return { metaData, activitiesByDay };
     }
+    // --- 結束費用匯入邏輯 ---
 
-    /* --- 結束 CSV 匯出/匯入邏輯 --- */
+
+    // --- NEW: Excel 匯出邏輯 ---
+
+    function prepareItinerarySheetData() {
+        const baseCurr = tripData.baseCurrency || 'JPY';
+        const rate = tripData.exchangeRate || 0.0;
+        const data = [];
+        
+        // 1. 寫入元數據
+        data.push([`旅行名稱: ${tripData.theme}`, `旅伴: ${tripData.travelers.join(', ')}`, `外幣: ${baseCurr}`, `匯率(外幣換台幣): ${rate}`]);
+        data.push([]); // 空行分隔
+        
+        // 2. 寫入活動數據標頭
+        const headers = [
+            "Day", "日期", "時間", "圖示", "標籤", "地點", "地址", "信箱", "備註(支援換行)", 
+            "類別", "費用細項", "幣別", "總金額", "總台幣(約)", "分帳詳情 (JSON 格式)",
+            "-------------------", "匯入時請使用CSV功能", "-------------------"
+        ];
+        data.push(headers);
+        
+        // 3. 寫入活動數據
+        Object.entries(tripData.days).forEach(([dayKey, dayData]) => {
+            const dayIndex = dayKey.replace('Day ', '');
+            dayData.activities.forEach((act) => {
+                
+                // 計算總金額
+                const totalAmount = act.splits.reduce((sum, s) => sum + (s.amount || 0), 0);
+                let twdAmount = 0;
+                if (act.currency === 'TWD') { twdAmount = totalAmount; } 
+                else { twdAmount = Math.round(totalAmount * rate); }
+
+                // 準備分帳詳情 JSON 字串 (為了匯入保留結構)
+                const splitsJson = JSON.stringify(act.splits || []).replace(/\n/g, '\\n'); // 內部換行轉義
+                
+                const row = [
+                    dayIndex,
+                    dayData.date,
+                    act.time,
+                    act.icon,
+                    act.label,
+                    act.location,
+                    act.address,
+                    act.email,
+                    act.desc,
+                    act.costType,
+                    act.expenseDetail,
+                    act.currency,
+                    totalAmount,
+                    twdAmount,
+                    splitsJson,
+                    "", "", "" // 佔位符
+                ];
+                data.push(row);
+            });
+        });
+        
+        return data;
+    }
+
+    function prepareListsSheetData() {
+        const data = [];
+
+        // 1. 行李準備清單
+        data.push(["行李準備清單"]);
+        data.push(["項目", "已完成"]);
+        tripData.checklist.forEach(item => {
+            data.push([item.text, item.checked ? "是" : "否"]);
+        });
+        
+        data.push([]); // 空行分隔
+        data.push([]); 
+
+        // 2. 購物願望清單
+        data.push(["購物願望清單"]);
+        data.push(["項目", "已完成"]);
+        tripData.shoppingList.forEach(item => {
+            data.push([item.text, item.checked ? "是" : "否"]);
+        });
+        
+        return data;
+    }
+
+    function prepareExpensesSheetData() {
+        const baseCurr = tripData.baseCurrency || 'JPY';
+        const rate = tripData.exchangeRate || 0.0;
+        const data = [];
+        
+        data.push([`外幣: ${baseCurr}`, `匯率(外幣換台幣): ${rate}`]);
+        data.push([]);
+
+        const headers = ["日期", "類別", "項目名稱", "細項備註", "付款人(誰出錢)", "受益人(歸屬誰)", "金額", "幣別", "台幣金額(約)"];
+        data.push(headers);
+        
+        tripData.expenses.forEach(exp => {
+            const isTwd = exp.currency === 'TWD';
+            let twd = 0;
+            if(isTwd) twd = exp.amount;
+            else twd = Math.round(exp.amount * rate);
+            
+            const row = [
+                exp.date,
+                exp.category,
+                exp.name,
+                exp.detail || '',
+                exp.payer,
+                exp.beneficiary || exp.payer,
+                exp.amount,
+                exp.currency,
+                twd
+            ];
+            data.push(row);
+        });
+        
+        return data;
+    }
+    
+    function prepareStatisticsSheetData() {
+        // Must ensure updateBudgetSummary has run to populate global variables
+        updateBudgetSummary(); 
+
+        const data = [];
+        const baseCurr = tripData.baseCurrency || 'JPY';
+        const rate = tripData.exchangeRate || 0.0;
+        const categories = ['食','衣','住','行','育','樂','購','雜'];
+        const travelers = tripData.travelers;
+        
+        data.push([`外幣: ${baseCurr}`, `匯率(外幣換台幣): ${rate}`, `總花費 (${baseCurr}): ${Object.values(window.payerBreakdown).reduce((a,b) => a+b, 0).toLocaleString()}`]);
+        data.push([]);
+        
+        // 1. 結帳分帳建議
+        data.push(["--- 結帳分帳建議 (以最少交易次數平帳) ---"]);
+        data.push(["支付人 (From)", "接收人 (To)", `金額 (${baseCurr})`, "台幣金額 (約)"]);
+        if (window.calculatedSettlements && window.calculatedSettlements.length > 0) {
+            window.calculatedSettlements.forEach(tx => {
+                data.push([tx.from, tx.to, tx.amount, tx.twd]);
+            });
+        } else {
+            data.push(["🎉 目前帳目平衡，無需轉帳"]);
+        }
+        
+        data.push([]); 
+        data.push([]); 
+        
+        // 2. 人員花費明細 (Consumption Mode for actual attribution)
+        data.push(["--- 人員花費明細 (實際歸屬消費金額, 單位: " + baseCurr + ") ---"]);
+        data.push(["旅伴", "實際消費總額", "實際消費總額 (約台幣)", "付款總額 (已代墊)"]);
+        travelers.forEach(person => {
+            const consumption = window.consumptionBreakdown[person] || 0;
+            const payment = window.payerBreakdown[person] || 0;
+            const diff = payment - consumption;
+            const status = diff > 0 ? `應收回 ${Math.round(diff).toLocaleString()}` : (diff < 0 ? `應支出 ${Math.round(Math.abs(diff)).toLocaleString()}` : "已平衡");
+
+            data.push([
+                person, 
+                consumption, 
+                Math.round(consumption * rate),
+                payment,
+                status // 淨餘額/狀態
+            ]);
+        });
+
+        data.push([]); 
+        data.push([]); 
+        
+        // 3. 每人各項類別花費 (Consumption Mode)
+        data.push(["--- 每人各項類別花費 (實際歸屬消費金額, 單位: " + baseCurr + ") ---"]);
+        const catHeaders = ["旅伴", ...categories, "總計"];
+        data.push(catHeaders);
+        
+        travelers.forEach(person => {
+            const row = [person];
+            let personTotal = 0;
+            categories.forEach(cat => {
+                const amount = window.personCategoryBreakdown[person] ? (window.personCategoryBreakdown[person][cat] || 0) : 0;
+                row.push(Math.round(amount)); // 避免小數點過多
+                personTotal += amount;
+            });
+            row.push(Math.round(personTotal));
+            data.push(row);
+        });
+
+        return data;
+    }
+
+
+    /**
+     * Replaces exportActivitiesToCsv. Exports all four data sections into a single Excel file.
+     */
+    function exportAllToExcel() {
+        if (!currentProjectId) {
+            showToast("請先選擇一個旅程。");
+            return;
+        }
+        
+        // 1. 準備四個 Sheet 的數據
+        const itineraryData = prepareItinerarySheetData();
+        const listsData = prepareListsSheetData();
+        const expensesData = prepareExpensesSheetData();
+        const statisticsData = prepareStatisticsSheetData();
+        
+        // 2. 創建 Workbook 和 Sheets
+        const workbook = XLSX.utils.book_new();
+        
+        const itinerarySheet = XLSX.utils.aoa_to_sheet(itineraryData);
+        XLSX.utils.book_append_sheet(workbook, itinerarySheet, "行程");
+        
+        const listsSheet = XLSX.utils.aoa_to_sheet(listsData);
+        XLSX.utils.book_append_sheet(workbook, listsSheet, "清單");
+        
+        const expensesSheet = XLSX.utils.aoa_to_sheet(expensesData);
+        XLSX.utils.book_append_sheet(workbook, expensesSheet, "費用");
+        
+        const statisticsSheet = XLSX.utils.aoa_to_sheet(statisticsData);
+        XLSX.utils.book_append_sheet(workbook, statisticsSheet, "統計");
+        
+        // 3. 命名檔案
+        // 旅程名稱_西元年月日
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
+        const filename = `${tripData.theme}_${dateStr}.xlsx`;
+        
+        // 4. 匯出 Excel
+        XLSX.writeFile(workbook, filename);
+        
+        showToast("Excel 檔案匯出完成！");
+    }
+
+    // --- END NEW: Excel 匯出邏輯 ---
+
 
     window.onload = init;
   </script>
 </body>
 </html>
+
