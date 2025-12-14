@@ -1308,6 +1308,10 @@
             
             // --- Email Copy Button ---
             const emailBtnHtml = act.email ? `<button onclick="event.stopPropagation(); copyText('${act.email}', '信箱')" class="bg-gray-50 hover:bg-orange-50 text-gray-400 hover:text-orange-500 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" title="複製信箱">📧 信箱</button>` : '';
+            
+            // NEW: Website Link Button
+            const websiteBtnHtml = act.websiteUrl ? `<a href="${act.websiteUrl.startsWith('http') ? act.websiteUrl : 'https://' + act.websiteUrl}" target="_blank" class="bg-gray-50 hover:bg-sky-50 text-gray-400 hover:text-sky-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" onclick="event.stopPropagation()">🔗 網站</a>` : '';
+
 
             // --- Edit Mode HTML ---
             const editModeHtml = `
@@ -1325,6 +1329,11 @@
                     <div class="flex gap-2 mb-2 bg-gray-50 p-2 rounded">
                         <span class="text-xs">📧</span>
                         <input type="text" class="edit-email w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.email||''}" placeholder="輸入相關信箱 (例如訂房/票券聯絡信箱)">
+                    </div>
+                    <!-- NEW: Website URL input field -->
+                    <div class="flex gap-2 mb-3 bg-gray-50 p-2 rounded">
+                        <span class="text-xs">🔗</span>
+                        <input type="url" class="edit-website-url w-full text-xs bg-transparent border-none p-0 focus:ring-0" value="${act.websiteUrl||''}" placeholder="輸入網站連結 (例如訂房網站)">
                     </div>
                     <div class="mb-3"><label class="text-xs text-gray-400 block mb-1">計費幣別</label><select class="edit-currency w-full text-sm border border-gray-200 rounded px-2 py-1 bg-white"><option value="${baseCurr}" ${act.currency !== 'TWD' ? 'selected' : ''}>${baseSymbol} ${baseCurr}</option><option value="TWD" ${act.currency !== 'TWD' ? 'selected' : ''}>NT$ TWD 台幣</option></select></div>
                     <textarea class="edit-desc w-full text-sm text-sub resize-none h-20 border border-gray-200 rounded p-2 mb-3" placeholder="備註...">${act.desc||''}</textarea>
@@ -1353,6 +1362,7 @@
                         ${descHtml}
                         
                         <div class="flex gap-2 mt-auto pt-2">
+                            ${websiteBtnHtml}
                             <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(act.address || act.location)}" target="_blank" class="bg-gray-50 hover:bg-sky-50 text-gray-400 hover:text-sky-600 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1" onclick="event.stopPropagation()">🗺️ 導航</a>
                             ${emailBtnHtml}
                             <button onclick="togglePanel(${idx})" class="bg-gray-50 hover:bg-[var(--theme-color)]/10 text-gray-400 hover:text-[var(--theme-color)] px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${isExpanded ? 'bg-[var(--theme-color)]/10 text-[var(--theme-color)]' : ''}">💴 ${isExpanded ? '收起' : '記帳'}</button>
@@ -1622,6 +1632,8 @@
         const newEmail = cardEl.querySelector('.edit-email').value; // Get Email
         const newDesc = cardEl.querySelector('.edit-desc').value;
         const newCurrency = cardEl.querySelector('.edit-currency').value;
+        // CAPTURE NEW FIELD
+        const newWebsiteUrl = cardEl.querySelector('.edit-website-url').value; 
 
         tripData.days[`Day ${currentDay}`].activities[idx].icon = newIcon;
         tripData.days[`Day ${currentDay}`].activities[idx].time = newTime;
@@ -1631,6 +1643,8 @@
         tripData.days[`Day ${currentDay}`].activities[idx].email = newEmail; // Save Email
         tripData.days[`Day ${currentDay}`].activities[idx].desc = newDesc;
         tripData.days[`Day ${currentDay}`].activities[idx].currency = newCurrency;
+        // SAVE NEW FIELD
+        tripData.days[`Day ${currentDay}`].activities[idx].websiteUrl = newWebsiteUrl;
         
         // Update currency in all splits
         tripData.days[`Day ${currentDay}`].activities[idx].splits.forEach(s => s.currency = newCurrency);
