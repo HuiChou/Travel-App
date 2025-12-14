@@ -12,7 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- NEW: Add SheetJS (xlsx) for Excel export -->
+  <!-- NEW: Add SheetJS (xlsx) for Excel export and import -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> 
   
   <script>
@@ -187,7 +187,7 @@
     }
     #edit-settings-modal.show .edit-modal-content { transform: scale(1); }
 
-    .edit-modal-input { color: #333; border-bottom: 1px solid #ddd; text-align: left; width: 100%; padding: 8px 0; }
+    .edit-modal-input { color: #333; border-bottom: 1px solid #ddd; text-align: left; width: 100%; padding: 4px 0; }
     
     .nav-floating-btn { 
       position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%); width: 72px; height: 72px; border-radius: 24px; 
@@ -278,7 +278,20 @@
               <div class="flex flex-col gap-4">
                   <div><label class="text-xs text-gray-400 block mb-1">旅程標題</label><input type="text" id="edit-theme" class="edit-modal-input text-xl font-bold font-serif"></div>
                   <div class="flex gap-3"><div class="flex-1"><label class="text-xs text-gray-400 block mb-1">開始</label><input type="date" id="edit-start-date" class="edit-modal-input text-sm"></div><div class="flex-1"><label class="text-xs text-gray-400 block mb-1">結束</label><input type="date" id="edit-end-date" class="edit-modal-input text-sm"></div></div>
-                  <div><label class="text-xs text-gray-400 block mb-1">封面圖片網址</label><input type="text" id="edit-banner" class="edit-modal-input text-xs font-sans text-blue-500"></div>
+                  
+                  <!-- MODIFIED: Add file upload capability -->
+                  <div>
+                    <label class="text-xs text-gray-400 block mb-1">封面圖片來源</label>
+                    <div class="flex flex-col gap-2 p-3 border border-gray-100 rounded-lg bg-gray-50">
+                        <!-- UPDATED UI TEXT (5MB Limit) -->
+                        <label for="banner-file-input" class="text-xs font-bold text-[var(--theme-color)]">1. 上傳本機檔案 (建議 < 5MB)</label>
+                        <input type="file" id="banner-file-input" accept="image/*" onchange="handleBannerUpload(event)" class="text-sm w-full text-gray-700">
+                        <label class="text-xs font-bold text-[var(--theme-color)] mt-2">2. 或貼上網路網址</label>
+                        <!-- Hidden input field to store the URL/Base64 -->
+                        <input type="text" id="edit-banner-url" class="edit-modal-input text-xs font-sans text-blue-500 bg-white" placeholder="https://images.unsplash.com/..." oninput="updateBannerPreview(this.value)">
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-1">上傳圖片將轉換為 Base64 儲存於您的瀏覽器中，可能會佔用較多儲存空間。若載入失敗請嘗試壓縮圖片。</p>
+                  </div>
                   
                   <div class="flex gap-3 items-center">
                     <div class="flex-1">
@@ -317,10 +330,13 @@
   </div>
 
   <div id="screen-itinerary" class="hidden transition-opacity duration-500">
-      <header class="relative h-[180px] w-full overflow-hidden group">
-        <div class="absolute inset-0 bg-black/30 z-10"></div>
-        <img id="hero-image" src="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Cover">
-        <div class="absolute inset-0 z-20 flex flex-col justify-center items-center text-white pt-4 px-6" id="header-content"></div>
+      <!-- MODIFIED: Added ID and placeholder for robust image handling -->
+      <header id="hero-header" class="relative h-[180px] w-full overflow-hidden group bg-gray-300">
+        <div id="hero-placeholder" class="absolute inset-0 z-10 flex items-center justify-center text-white/50 text-xs font-sans font-bold">載入封面圖片中...</div>
+        <div class="absolute inset-0 bg-black/30 z-20"></div>
+        <!-- MODIFIED: Added onerror/onload handlers and initial opacity: 0 -->
+        <img id="hero-image" src="" onerror="handleImageError()" onload="handleImageLoad()" class="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-0" alt="Cover">
+        <div class="absolute inset-0 z-30 flex flex-col justify-center items-center text-white pt-4 px-6" id="header-content"></div>
         <div class="absolute top-3 right-3 md:top-4 md:right-4 flex flex-row gap-2 md:gap-3 z-50 scale-90 md:scale-100 origin-top-right">
             
             <!-- MODIFIED: Change CSV export to Excel export -->
@@ -331,12 +347,13 @@
                 </svg>
             </button>
             
-            <!-- Retain CSV import functionality for complex structure -->
+            <!-- MODIFIED: Changed ID and accept to support Excel import -->
             <label for="import-excel-file" class="float-btn cursor-pointer" title="匯入完整行程 Excel">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.25 2.25 0 003.375 4.5v15A2.25 2.25 0 005.625 21h12.75a2.25 2.25 0 002.25-2.25V15.5M12 9l-4.5 4.5M12 9l4.5 4.5M12 9V21" />
                 </svg>
             </label>
+            <!-- UPDATED: Pointed to new Excel import function -->
             <input type="file" id="import-excel-file" accept=".xlsx" class="hidden" onchange="importActivitiesFromExcel(event)">
             
             <button onclick="exportAllPdf()" class="float-btn" title="輸出 PDF">
@@ -814,16 +831,59 @@
         COLORS[0] = tripData.themeColor;
     }
     
+    // --- Image Load/Error Handlers ---
+    function handleImageError() {
+        const img = document.getElementById('hero-image');
+        const header = document.getElementById('hero-header');
+        const placeholder = document.getElementById('hero-placeholder');
+        
+        img.style.opacity = '0'; // Hide the broken image icon
+        placeholder.textContent = '❌ 封面圖片載入失敗或過大 (使用主題色背景)';
+        placeholder.style.backgroundColor = 'rgba(0,0,0,0.4)';
+        placeholder.style.color = 'white';
+        header.style.backgroundColor = tripData.themeColor; // Fallback background color
+    }
+
+    function handleImageLoad() {
+        const img = document.getElementById('hero-image');
+        const placeholder = document.getElementById('hero-placeholder');
+        
+        img.style.opacity = '1';
+        placeholder.textContent = ''; // Clear placeholder text
+        placeholder.style.backgroundColor = 'transparent';
+    }
+
     function renderHeader() { 
-        document.getElementById('hero-image').src=tripData.bannerUrl; 
+        const imgEl = document.getElementById('hero-image');
+        const placeholder = document.getElementById('hero-placeholder');
+        const header = document.getElementById('hero-header');
+        
+        // 1. Reset image state and set loading state
+        imgEl.style.opacity = '0';
+        imgEl.removeAttribute('src'); 
+        placeholder.textContent = '載入封面圖片中...';
+        placeholder.style.backgroundColor = 'transparent';
+        placeholder.style.color = 'white';
+        header.style.backgroundColor = '#ccc'; // Default color during load attempt
+
+        // 2. Load the image source. This triggers onload/onerror
+        imgEl.src = tripData.bannerUrl; 
+        
+        // If bannerUrl is empty or not set, immediately show error/default state
+        if (!tripData.bannerUrl) {
+            handleImageError();
+            placeholder.textContent = '🏠 未設定封面圖片 (使用預設背景)';
+            placeholder.style.backgroundColor = 'transparent';
+        }
+
+        // 3. Render content overlay (unchanged)
         const c=document.getElementById('header-content'); 
-        // 替換 animate-slide-up 為 animate-fade-in/bounce-in
         c.innerHTML=`<div class="text-[10px] tracking-[0.2em] uppercase opacity-80 mb-2 font-sans animate-fade-in" style="animation-delay: 0.3s; font-weight: bold;">Travel Itinerary</div><h1 class="text-3xl font-serif font-bold tracking-widest drop-shadow-lg text-center px-4 animate-bounce-in" style="animation-delay: 0.4s;">${tripData.theme}</h1><p class="mt-2 text-xs font-bold tracking-wider opacity-90 font-sans animate-fade-in" style="animation-delay: 0.5s;">${new Date(tripData.startDate).toLocaleDateString()} - ${new Date(tripData.endDate).toLocaleDateString()}</p>`;
         
         document.getElementById('edit-theme').value = tripData.theme;
         document.getElementById('edit-start-date').value = tripData.startDate;
         document.getElementById('edit-end-date').value = tripData.endDate;
-        document.getElementById('edit-banner').value = tripData.bannerUrl;
+        document.getElementById('edit-banner-url').value = tripData.bannerUrl; 
         document.getElementById('edit-rate').value = tripData.exchangeRate;
         document.getElementById('edit-currency-code').value = tripData.baseCurrency || 'JPY';
         document.getElementById('edit-color').value = tripData.themeColor;
@@ -837,6 +897,48 @@
         b.classList.add('toast-active'); 
         setTimeout(() => { b.classList.remove('toast-active'); }, 2500);
     }
+    
+    // --- UPDATED: 處理圖片上傳並轉換為 Base64 (5MB Limit) ---
+    function handleBannerUpload(event) {
+        const file = event.target.files[0];
+        // INCREASED MAX_SIZE from 2MB to 5MB
+        const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+        if (file) {
+            if (file.size > MAX_SIZE) { 
+                showToast("圖片檔案過大 (限制 5MB)，請改用網址或縮小後再上傳。");
+                event.target.value = null; // Clear file input
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Url = e.target.result;
+                const urlInput = document.getElementById('edit-banner-url');
+                
+                // Clear the URL input and set the new Base64 value
+                urlInput.value = base64Url; 
+                
+                // Update the hidden input value if user pastes a URL next time
+                urlInput.focus();
+                
+                showToast("圖片已轉換為 Base64 準備儲存。");
+            };
+            reader.onerror = function() {
+                showToast("檔案讀取失敗。");
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Helper to update the banner url field when typing
+    function updateBannerPreview(url) {
+        // When the user manually types or pastes a URL, clear the file input 
+        // to avoid confusion on which source to save.
+        document.getElementById('banner-file-input').value = null;
+    }
+    // --- END UPDATED IMAGE UPLOAD ---
+
 
     // --- 修正後的重置資料功能 (Fixed Reset Function) ---
     function resetAllData() {
@@ -876,6 +978,9 @@
         if(modal.classList.contains('hidden')) { 
           renderHeader(); 
           modal.classList.remove('hidden'); 
+          // Set initial value for banner URL input
+          document.getElementById('edit-banner-url').value = tripData.bannerUrl;
+          document.getElementById('banner-file-input').value = null; // clear file input on open
           setTimeout(() => { modal.classList.add('show'); }, 10); // 觸發 CSS 轉場
         } else {
           modal.classList.remove('show');
@@ -887,7 +992,8 @@
         const newTheme = document.getElementById('edit-theme').value;
         const newStart = document.getElementById('edit-start-date').value;
         const newEnd = document.getElementById('edit-end-date').value;
-        const newBanner = document.getElementById('edit-banner').value;
+        // MODIFIED: Read from the new ID
+        const newBanner = document.getElementById('edit-banner-url').value; 
         const newRate = document.getElementById('edit-rate').value;
         const newCurrency = document.getElementById('edit-currency-code').value;
         const newColor = document.getElementById('edit-color').value;
@@ -898,7 +1004,9 @@
             tripData.startDate = newStart;
             tripData.endDate = newEnd;
         }
+        // MODIFIED: Save the new URL/Base64
         tripData.bannerUrl = newBanner;
+        
         tripData.exchangeRate = parseFloat(newRate);
         tripData.baseCurrency = newCurrency;
         tripData.themeColor = newColor;
@@ -2308,7 +2416,7 @@
             const isHidden = activeCategoryFilter !== null && activeCategoryFilter !== cat;
             return {
                 label: cat,
-                data: tripData.travelers.map(person => window.personCategoryBreakdown[person] ? window.personCategoryBreakdown[person][cat] : 0),
+                data: tripData.travelers.map(person => window.personCategoryBreakdown[person] ? window.personCategoryBreakdown[person][cat] || 0 : 0),
                 backgroundColor: CAT_COLORS[cat] || '#ccc',
                 stack: 'Stack 0', hidden: isHidden 
             };
@@ -2506,9 +2614,27 @@
     }
     // --- 結束 PDF 匯出函式 ---
     
-    // --- 費用匯入邏輯 (保留原 CSV 邏輯，名稱不變) ---
-    // 從 CSV 匯入**完整**行程 (包含元數據)
-    function importActivitiesFromCsv(event) {
+    // --- Excel 匯入/費用邏輯 (新增 Excel 匯入) ---
+    
+    /**
+     * Helper to read Excel file into a buffer.
+     */
+    function readExcelFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = e.target.result;
+                resolve(data);
+            };
+            reader.onerror = (e) => reject(e);
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    /**
+     * Main function for Excel Import.
+     */
+    async function importActivitiesFromExcel(event) {
         if (!currentProjectId) {
             showToast("請先選擇一個旅程。");
             return;
@@ -2517,259 +2643,308 @@
         const file = event.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            try {
-                const { metaData, activitiesByDay } = parseMultiSectionCsv(text);
+        try {
+            const data = await readExcelFile(file);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            let itineraryData = [];
+            let expensesData = [];
+            let listsData = {};
 
-                // 1. 更新元數據 (Meta Data)
-                let metaUpdated = false;
-                if (Object.keys(metaData).length > 0) {
-                     if (window.confirm("偵測到新的旅行設定，是否要覆蓋當前設定（名稱、日期、匯率、旅伴）？")) {
-                        // 確保將中文字段映射回 tripData 的英文 key
-                        const META_HEADERS_MAP = {
-                            "theme": "旅行名稱",
-                            "startDate": "開始日期",
-                            "endDate": "結束日期",
-                            "exchangeRate": "匯率(外幣換台幣)",
-                            "baseCurrency": "外幣代碼",
-                            "travelers": "旅伴(逗號分隔)",
-                            "themeColor": "主題色(#HEX)"
-                        };
-                        
-                        Object.entries(metaData).forEach(([attrZh, value]) => {
-                            const key = Object.keys(META_HEADERS_MAP).find(k => META_HEADERS_MAP[k] === attrZh);
-                            if (key) {
-                                if (key === 'travelers' && typeof value === 'string') {
-                                    tripData.travelers = value.split(',').map(t => t.trim()).filter(t => t);
-                                } else if (key === 'exchangeRate') {
-                                    tripData.exchangeRate = parseFloat(value) || 0.0;
-                                } else if (key === 'startDate' || key === 'endDate') {
-                                    tripData[key] = value.trim(); // 日期保留字串格式
-                                } else {
-                                    tripData[key] = value;
-                                }
-                                metaUpdated = true;
-                            }
-                        });
-                        if (metaUpdated) {
-                            // 重新計算 Day 結構和應用主題
-                            updateDateRange();
-                            applyTheme();
-                            renderHeader();
-                            renderDayTabs();
-                        }
+            // Helper to extract sheet data
+            const getSheetData = (sheetName) => {
+                const sheet = workbook.Sheets[sheetName];
+                if (sheet) {
+                    // Convert sheet to array of arrays (raw data)
+                    return XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                }
+                return null;
+            };
+
+            // 1. 處理「行程」工作表
+            const itinerarySheetData = getSheetData('行程');
+            if (itinerarySheetData && itinerarySheetData.length > 0) {
+                // ASSUME: Meta data is in the first row, Activity data headers are dynamic
+                
+                // NEW: Parse Meta Data from the first row of "行程" sheet (Row 0)
+                const metaRow = itinerarySheetData[0];
+                if (metaRow && String(metaRow[0]).startsWith('旅行名稱')) {
+                    const importedMeta = {
+                        theme: String(metaRow[0]).split(': ')[1]?.trim() || tripData.theme,
+                        travelers: String(metaRow[1]).split(': ')[1]?.trim().split(/[,，]/).map(t => t.trim()).filter(t => t) || tripData.travelers,
+                        baseCurrency: String(metaRow[2]).split(': ')[1]?.trim() || tripData.baseCurrency,
+                        exchangeRate: parseFloat(String(metaRow[3]).split(': ')[1]?.trim()) || tripData.exchangeRate,
+                    };
+
+                    if (window.confirm("偵測到新的旅行設定，是否要覆蓋當前設定（名稱、匯率、旅伴）？")) {
+                        Object.assign(tripData, importedMeta);
+                        // We rely on activity import/updateDateRange later to set start/end date
                     }
                 }
                 
-                // 2. 替換/新增活動數據 (Activity Data)
-                if (Object.keys(activitiesByDay).length > 0) {
-                     if (window.confirm("偵測到新的行程活動，是否要替換當前旅行所有 Day 的行程活動？")) {
-                        // 重設所有 Day 的活動
-                        const newDaysStructure = {};
-                        
-                        Object.entries(tripData.days).forEach(([dayKey, dayObj]) => {
-                            const dayIndex = dayKey.replace('Day ', '');
-                            
-                            // 使用 CSV 中的新活動，否則保留 Day 的日期和位置，但清空活動
-                            const newActivities = activitiesByDay[dayIndex] || [];
-                            
-                            newDaysStructure[dayKey] = {
-                                date: dayObj.date,
-                                location: dayObj.location,
-                                activities: newActivities
-                            };
-                        });
-                        
-                        tripData.days = newDaysStructure;
-                    } else if (window.confirm("是否要將這些活動【追加】到當前行程的活動列表末尾？")) {
-                        
-                        // 追加入口（僅追加到對應 Day 的活動列表）
-                         Object.entries(activitiesByDay).forEach(([dayIndex, newActs]) => {
-                            const dayKey = `Day ${dayIndex}`;
-                            
-                            if (tripData.days[dayKey]) {
-                                // 追加入新的活動
-                                tripData.days[dayKey].activities.push(...newActs);
-                                
-                                // 追加入後立即排序
-                                sortCurrentDayActivities();
-                            } else {
-                                // 如果 Day 不存在 (可能 CSV 包含了行程日期之外的 Day)，則忽略
-                                console.warn(`Day ${dayIndex} 不存在於當前行程範圍內，跳過匯入。`);
-                            }
-                        });
+                // Find Activity Header Row (Row containing "時間", "地點")
+                let headerRowIndex = itinerarySheetData.findIndex(row => row.includes('時間') && row.includes('地點'));
+                
+                if (headerRowIndex !== -1) {
+                    itineraryData = itinerarySheetData.slice(headerRowIndex + 1);
+                    const headers = itinerarySheetData[headerRowIndex];
+                    
+                    if (window.confirm("偵測到新的行程活動，是否要替換當前旅行所有 Day 的行程活動？")) {
+                        await parseAndImportItinerary(itineraryData, headers); // Overwrite mode (default)
+                    } else if (window.confirm("是否要將這些行程活動【追加】到當前行程的活動列表末尾？")) {
+                        await parseAndImportItinerary(itineraryData, headers, true); // Append mode
                     }
-                }
-
-                // 儲存並重新渲染
-                saveCurrentTrip();
-                renderTimeline(true);
-                updateBudgetSummary();
-                showToast(`匯入完成！設定${metaUpdated ? '已更新' : '未變更'}，活動已替換/追加。`);
-
-            } catch (error) {
-                console.error("CSV 匯入失敗:", error);
-                showToast(`CSV 匯入失敗，請檢查檔案結構。(${error.message})`);
-            }
-        };
-        reader.readAsText(file, 'UTF-8');
-        // 清除檔案 input 的值，以便下次能觸發 onchange 事件
-        event.target.value = null; 
-    }
-
-    // 核心多段式 CSV 解析邏輯
-    function parseMultiSectionCsv(csvText) {
-        if (csvText.charCodeAt(0) === 0xFEFF) {
-            csvText = csvText.substring(1);
-        }
-        
-        const lines = csvText.split('\n').filter(line => line.trim() !== '');
-        if (lines.length < 2) return { metaData: {}, activitiesByDay: {} };
-
-        // 簡易 CSV 解析函式 (從單欄位模式調整)
-        const parseRow = (line) => {
-            const result = [];
-            let inQuotes = false;
-            let currentField = '';
-            // 由於採用固定三欄模式，我們可以放鬆對逗號的檢查，但保留對引號和轉義的處理
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') {
-                    if (i + 1 < line.length && line[i + 1] === '"') {
-                        currentField += '"';
-                        i++;
-                    } else {
-                        inQuotes = !inQuotes;
-                    }
-                } else if (char === ',' && !inQuotes) {
-                    result.push(currentField);
-                    currentField = '';
                 } else {
-                    currentField += char;
+                     showToast("警告: 「行程」工作表中未找到活動標頭。");
+                }
+            } else {
+                 showToast("警告: Excel 檔案中未找到或無法解析「行程」工作表。");
+            }
+
+            // 2. 處理「費用」工作表
+            const expensesSheetData = getSheetData('費用');
+            if (expensesSheetData && expensesSheetData.length > 0) {
+                // Find Header Row
+                let headerRowIndex = expensesSheetData.findIndex(row => row.includes('項目名稱') && row.includes('金額'));
+                
+                if (headerRowIndex !== -1) {
+                    const expensesRows = expensesSheetData.slice(headerRowIndex + 1);
+                    const headers = expensesSheetData[headerRowIndex];
+                    
+                    if (window.confirm("偵測到新的費用列表，是否要【覆蓋】當前所有費用記錄？")) {
+                        parseAndImportExpenses(expensesRows, headers, false);
+                    } else if (window.confirm("是否要將這些費用【追加】到當前費用列表末尾？")) {
+                        parseAndImportExpenses(expensesRows, headers, true);
+                    }
                 }
             }
-            result.push(currentField);
             
-            return result.map(f => {
-                let trimmed = f.trim();
-                // 移除前後引號，並清理轉義的換行符
-                if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
-                    trimmed = trimmed.substring(1, trimmed.length - 1);
-                }
-                // 這邊我們假設匯入的 CSV 換行符是 \n 標記，並轉回來
-                return trimmed.replace(/""/g, '"').replace(/\\n/g, '\n').trim();
-            });
-        };
-        
-        let metaData = {};
-        let activitiesByDay = {};
-        let currentSection = null;
-        let activityHeaders = null;
+            // 3. 處理「清單」工作表 
+            const listsSheetData = getSheetData('清單');
+             if (listsSheetData && listsSheetData.length > 0) {
+                 if (window.confirm("偵測到新的清單資料，是否要【覆蓋】目前的行李準備和購物願望清單？")) {
+                     parseAndImportLists(listsSheetData);
+                 }
+             }
+             
+            // Re-apply theme and re-render everything based on potentially new tripData
+            updateDateRange(); // Recalculate days based on metadata
+            applyTheme();
+            renderHeader(); 
+            renderDayTabs();
+            renderTimeline(true);
+            renderExpensesList();
+            renderListsPage();
+            updateBudgetSummary();
+            
+            showToast(`Excel 匯入完成！`);
+
+        } catch (error) {
+            console.error("Excel 匯入失敗:", error);
+            showToast(`Excel 匯入失敗，請檢查檔案格式。(${error.message})`);
+        } finally {
+            // 清除檔案 input 的值，以便下次能觸發 onchange 事件
+            event.target.value = null; 
+        }
+    }
+    
+    /**
+     * Parses itinerary data from Excel rows and imports/appends it.
+     */
+    async function parseAndImportItinerary(rows, headers, appendMode = false) {
         const defaultTraveler = tripData.travelers[0] || '自己';
         const defaultCurrency = tripData.baseCurrency || 'JPY';
-
-        // 必須定義這個 Map 來正確解析匯入的 CSV 欄位名稱
-        const ACTIVITY_HEADERS_MAP_REVERSE = {
-            "時間": "time", 
-            "圖示": "icon", 
-            "標籤": "label", 
-            "地點": "location", 
-            "地址": "address", 
-            "信箱": "email", 
-            "備註(支援換行)": "desc", 
-            "類別": "costType",
-            "費用細項": "expenseDetail",
-            "幣別": "currency",
-            "分帳結構(JSON)": "splits_json"
+        
+        let newActivitiesByDay = {}; // { dayIndex: [activity, ...] }
+        
+        const keyMap = {
+            'Day': 'day', '日期': 'date', '時間': 'time', '圖示': 'icon', '標籤': 'label',
+            '地點': 'location', '地址': 'address', '信箱': 'email', '備註(支援換行)': 'desc',
+            '類別': 'costType', '費用細項': 'expenseDetail', '幣別': 'currency',
+            '分帳詳情 (JSON 格式)': 'splitsJson'
         };
 
+        rows.forEach(row => {
+            let act = {};
+            let dayIndex = '1';
 
-        for (let i = 1; i < lines.length; i++) {
-            const rowValues = parseRow(lines[i]);
-            const key = rowValues[0] ? rowValues[0].toUpperCase() : null;
+            headers.forEach((header, index) => {
+                const key = keyMap[header.trim()];
+                const value = row[index] !== undefined ? String(row[index]).trim() : '';
 
-            if (key === '[META]' && rowValues.length >= 3) {
-                // META: Key, Attribute, Value
-                const attributeZh = rowValues[1];
-                const value = rowValues[2];
-                metaData[attributeZh] = value;
-                currentSection = 'META';
-                continue;
-            } 
-            
-            if (key === '[ACTIVITY]') {
-                if (rowValues.length > 3 && rowValues[1] === 'Day/Index') {
-                    // 這是活動的標頭行: [ACTIVITY],Day/Index,時間,圖示,...
-                    activityHeaders = rowValues.slice(2).map(h => {
-                         // 確保將中文標頭轉換為英文 key
-                         return ACTIVITY_HEADERS_MAP_REVERSE[h] || h; 
-                    });
-                    currentSection = 'ACTIVITY';
-                    continue;
+                if (key === 'day') {
+                    dayIndex = String(value);
+                } else if (key && key !== 'date') { // Date is only for reference here, actual date is pulled from tripData.days later
+                    act[key] = value;
                 }
-                
-                if (currentSection === 'ACTIVITY' && activityHeaders && rowValues.length >= activityHeaders.length + 2) {
-                    // 這是活動數據行
-                    const dayIndex = rowValues[1] ? rowValues[1].split('-')[0] : '1'; // 假設 Day/Index 是 "1-0"
-                    
-                    let newAct = {};
-                    let splitsJson = null;
-                    const dataValues = rowValues.slice(2);
-                    
-                    activityHeaders.forEach((headerKey, index) => {
-                        const value = dataValues[index] || '';
-                        if (headerKey === 'splits_json') {
-                            splitsJson = value;
-                        } else {
-                            newAct[headerKey] = value;
-                        }
-                    });
-                    
-                    // 處理 Splits 結構
-                    newAct.splits = [];
-                    if (splitsJson) {
-                        try {
-                            const parsedSplits = JSON.parse(splitsJson);
-                            if (Array.isArray(parsedSplits)) {
-                                newAct.splits = parsedSplits.map(s => ({
-                                    id: uuidv4(), 
-                                    beneficiary: s.beneficiary || defaultTraveler,
-                                    payer: s.payer || defaultTraveler,
-                                    amount: parseInt(s.amount) || 0,
-                                    currency: s.currency || newAct.currency || defaultCurrency
-                                }));
-                            }
-                        } catch (e) {
-                            console.error(`解析 Day ${dayIndex} 的 splits_json 失敗:`, e);
-                        }
-                    }
-                    
-                    // 確保基本結構
-                    if (newAct.splits.length === 0) {
-                         newAct.splits = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: newAct.currency || defaultCurrency }];
-                    }
-                    
-                    newAct.icon = newAct.icon || '📍';
-                    newAct.time = newAct.time || '12:00';
-                    newAct.costType = newAct.costType || '雜';
+            });
 
-                    if (!activitiesByDay[dayIndex]) {
-                        activitiesByDay[dayIndex] = [];
+            // Reconstruct splits
+            act.splits = [];
+            const splitsJson = act.splitsJson; 
+            delete act.splitsJson; // Clean up the temp field
+
+            if (splitsJson) {
+                try {
+                    // Internal JSON string uses \\n for new lines
+                    const parsedSplits = JSON.parse(splitsJson.replace(/\\n/g, '\n'));
+                    if (Array.isArray(parsedSplits)) {
+                         act.splits = parsedSplits.map(s => ({
+                            id: uuidv4(), 
+                            beneficiary: s.beneficiary || defaultTraveler,
+                            payer: s.payer || defaultTraveler,
+                            amount: parseInt(s.amount) || 0,
+                            currency: s.currency || act.currency || defaultCurrency
+                        }));
                     }
-                    activitiesByDay[dayIndex].push(newAct);
+                } catch (e) {
+                    console.error("Splits JSON parsing failed:", e);
+                    act.splits = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: act.currency || defaultCurrency }];
+                }
+            } else {
+                 act.splits = [{ id: uuidv4(), beneficiary: defaultTraveler, payer: defaultTraveler, amount: 0, currency: act.currency || defaultCurrency }];
+            }
+
+            // Ensure mandatory fields
+            act.icon = act.icon || '📍';
+            act.time = act.time || '12:00';
+            act.costType = act.costType || '雜';
+
+            if (!newActivitiesByDay[dayIndex]) {
+                newActivitiesByDay[dayIndex] = [];
+            }
+            newActivitiesByDay[dayIndex].push(act);
+        });
+
+        // Apply imported activities to tripData
+        Object.entries(tripData.days).forEach(([dayKey, dayObj]) => {
+            const dayIndex = dayKey.replace('Day ', '');
+            const newActs = newActivitiesByDay[dayIndex];
+            
+            // Fix: Check if newActs is defined. If we are in overwrite mode and Excel provides no data for a day, clear it.
+            if (!appendMode && newActs === undefined) {
+                dayObj.activities = []; // Overwrite with empty array if no data is provided for this day in Excel
+            } else if (newActs && newActs.length > 0) {
+                
+                if (appendMode) {
+                    dayObj.activities.push(...newActs);
+                    
+                    // Sort the entire day's activities after appending
+                    const dayNum = parseInt(dayIndex);
+                    // Temporarily set currentDay to sort the activities for that day, then immediately switch back.
+                    const originalDay = currentDay; 
+                    currentDay = dayNum; 
+                    sortCurrentDayActivities();
+                    currentDay = originalDay;
+                    
+                } else {
+                    // Overwrite mode
+                    dayObj.activities = newActs;
+                }
+            } else if (!appendMode && newActs?.length === 0) {
+                 // Explicitly provided empty array in Excel, so clear the activities.
+                dayObj.activities = [];
+            }
+        });
+    }
+    
+    /**
+     * Parses expenses data from Excel rows and imports/appends it.
+     */
+    function parseAndImportExpenses(rows, headers, appendMode) {
+        let newExpenses = [];
+        
+        const keyMap = {
+            '日期': 'date', '類別': 'category', '項目名稱': 'name', '細項備註': 'detail', 
+            '付款人(誰出錢)': 'payer', '受益人(歸屬誰)': 'beneficiary', '金額': 'amount', 
+            '幣別': 'currency'
+        };
+
+        // Skip potential meta rows, start looking for data after headers
+        let dataStart = rows.findIndex(row => row[0]?.trim() === '日期');
+        if (dataStart === -1) return; 
+
+        const dataRows = rows.slice(dataStart + 1);
+
+        dataRows.forEach(row => {
+            let exp = {};
+            let isValid = true;
+            
+            headers.forEach((header, index) => {
+                const key = keyMap[header.trim()];
+                const value = row[index] !== undefined ? String(row[index]).trim() : '';
+
+                if (key === 'amount') {
+                    // Clean value before parsing int
+                    const cleanedValue = value.replace(/[$,¥₩฿€]/g, '').replace(/,/g, '');
+                    exp[key] = parseInt(cleanedValue) || 0;
+                    if (exp[key] <= 0) isValid = false;
+                } else if (key) {
+                    exp[key] = value;
+                }
+            });
+
+            // Ensure mandatory fields are set
+            exp.currency = exp.currency || tripData.baseCurrency;
+            exp.category = exp.category || '雜';
+            exp.payer = exp.payer || tripData.travelers[0] || '自己';
+            exp.beneficiary = exp.beneficiary || exp.payer;
+            exp.name = exp.name || '未命名費用';
+
+            if (isValid) {
+                newExpenses.push(exp);
+            }
+        });
+
+        if (appendMode) {
+            tripData.expenses.push(...newExpenses);
+        } else {
+            tripData.expenses = newExpenses;
+        }
+    }
+    
+    /**
+     * Parses list data from Excel rows and imports/appends it.
+     */
+    function parseAndImportLists(rows) {
+        // Fix: Explicitly clear before populating in overwrite mode (which is always for lists now)
+        tripData.checklist = [];
+        tripData.shoppingList = [];
+        let currentList = null;
+
+        rows.forEach(row => {
+            const firstCell = String(row[0] || '').trim();
+            
+            if (firstCell === '行李準備清單') {
+                currentList = 'checklist';
+                return;
+            } else if (firstCell === '購物願望清單') {
+                currentList = 'shoppingList';
+                return;
+            } else if (firstCell === '項目') {
+                // Skip header row
+                return;
+            }
+
+            if (currentList && firstCell) {
+                const item = firstCell;
+                // Check if the second column value is "是" (Yes) or boolean true
+                const checkedValue = String(row[1] || '').trim().toLowerCase();
+                const checked = checkedValue === '是' || checkedValue === 'true';
+                
+                if (currentList === 'checklist') {
+                    tripData.checklist.push({ text: item, checked: checked });
+                } else if (currentList === 'shoppingList') {
+                    tripData.shoppingList.push({ text: item, checked: checked });
                 }
             }
-            // 忽略無法識別或格式錯誤的行
-        }
-
-        return { metaData, activitiesByDay };
+        });
     }
-    // --- 結束費用匯入邏輯 ---
+
+    // --- END Excel 匯入/費用邏輯 ---
 
 
-    // --- NEW: Excel 匯出邏輯 ---
+    // --- Excel 匯出邏輯 (不變) ---
 
     function prepareItinerarySheetData() {
         const baseCurr = tripData.baseCurrency || 'JPY';
@@ -2987,7 +3162,9 @@
         // 旅程名稱_西元年月日
         const now = new Date();
         const dateStr = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}`;
-        const filename = `${tripData.theme}_${dateStr}.xlsx`;
+        // Clean trip name for filename
+        const safeTheme = tripData.theme.replace(/[^a-zA-Z0-9\u4e00-\u9fa5\s]/g, '').trim().substring(0, 50); 
+        const filename = `${safeTheme || 'Travel'}_${dateStr}.xlsx`;
         
         // 4. 匯出 Excel
         XLSX.writeFile(workbook, filename);
@@ -2995,11 +3172,10 @@
         showToast("Excel 檔案匯出完成！");
     }
 
-    // --- END NEW: Excel 匯出邏輯 ---
+    // --- END Excel 匯出邏輯 ---
 
 
     window.onload = init;
   </script>
 </body>
 </html>
-
