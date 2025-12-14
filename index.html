@@ -2676,10 +2676,9 @@
                         exchangeRate: parseFloat(String(metaRow[3]).split(': ')[1]?.trim()) || tripData.exchangeRate,
                     };
 
-                    if (window.confirm("偵測到新的旅行設定，是否要覆蓋當前設定（名稱、匯率、旅伴）？")) {
-                        Object.assign(tripData, importedMeta);
-                        // We rely on activity import/updateDateRange later to set start/end date
-                    }
+                    // MODIFIED: Directly overwrite metadata without confirmation
+                    Object.assign(tripData, importedMeta);
+                    // We rely on activity import/updateDateRange later to set start/end date
                 }
                 
                 // Find Activity Header Row (Row containing "時間", "地點")
@@ -2689,11 +2688,9 @@
                     itineraryData = itinerarySheetData.slice(headerRowIndex + 1);
                     const headers = itinerarySheetData[headerRowIndex];
                     
-                    if (window.confirm("偵測到新的行程活動，是否要替換當前旅行所有 Day 的行程活動？")) {
-                        await parseAndImportItinerary(itineraryData, headers); // Overwrite mode (default)
-                    } else if (window.confirm("是否要將這些行程活動【追加】到當前行程的活動列表末尾？")) {
-                        await parseAndImportItinerary(itineraryData, headers, true); // Append mode
-                    }
+                    // MODIFIED: Direct overwrite of itinerary without confirmation
+                    await parseAndImportItinerary(itineraryData, headers, false);
+
                 } else {
                      showToast("警告: 「行程」工作表中未找到活動標頭。");
                 }
@@ -2711,20 +2708,16 @@
                     const expensesRows = expensesSheetData.slice(headerRowIndex + 1);
                     const headers = expensesSheetData[headerRowIndex];
                     
-                    if (window.confirm("偵測到新的費用列表，是否要【覆蓋】當前所有費用記錄？")) {
-                        parseAndImportExpenses(expensesRows, headers, false);
-                    } else if (window.confirm("是否要將這些費用【追加】到當前費用列表末尾？")) {
-                        parseAndImportExpenses(expensesRows, headers, true);
-                    }
+                    // MODIFIED: Direct overwrite of expenses without confirmation
+                    parseAndImportExpenses(expensesRows, headers, false);
                 }
             }
             
             // 3. 處理「清單」工作表 
             const listsSheetData = getSheetData('清單');
              if (listsSheetData && listsSheetData.length > 0) {
-                 if (window.confirm("偵測到新的清單資料，是否要【覆蓋】目前的行李準備和購物願望清單？")) {
-                     parseAndImportLists(listsSheetData);
-                 }
+                 // MODIFIED: Direct overwrite of lists without confirmation
+                 parseAndImportLists(listsSheetData);
              }
              
             // Re-apply theme and re-render everything based on potentially new tripData
@@ -2737,7 +2730,7 @@
             renderListsPage();
             updateBudgetSummary();
             
-            showToast(`Excel 匯入完成！`);
+            showToast(`Excel 匯入完成！資料已覆蓋。`);
 
         } catch (error) {
             console.error("Excel 匯入失敗:", error);
